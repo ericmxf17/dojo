@@ -93,9 +93,8 @@ not mutate the demo database. See [TESTING.md](TESTING.md) for browser checks.
 
 ## Deployment boundary
 
-This repository is integrated and runnable **locally**, not publicly deployed.
-The production frontend builds successfully with the original Lovable Cloudflare
-configuration. Vite's development proxy is not included in that production build.
+The frontend demo is publicly deployed at **https://side-work-six.vercel.app** in the `ericmxf17-gmailcoms-projects` Vercel workspace. Its current hosted mode uses labeled sample data and browser-local imports; the persistent FastAPI/SQLite backend remains local.
+The production frontend builds with Nitro, which selects Vercel on Vercel and retains the original Lovable Cloudflare target elsewhere. Vite's development proxy is not included in that production build.
 For a hosted version, either route `/sidework-api/*` to a separately hosted FastAPI
 service with persistent disk, or configure a reachable HTTPS API base and allow
 the frontend origin through `SIDEWORK_CORS_ORIGINS`. If API-key access is enabled,

@@ -48,3 +48,14 @@ Eight additional tests verify path scoping, explicit missing-backend errors,
 server-only credential injection, multipart byte preservation, backend validation
 status preservation, unreachable-backend handling, invalid target configuration,
 and allowed methods. TypeScript and a Vercel-targeted production build also pass.
+
+## Permanent Vercel deployment verification
+
+Production URL: https://side-work-six.vercel.app
+
+- All six page routes returned HTTP 200 without authentication.
+- Browser rendered the dashboard in explicitly labeled Sample data mode, with
+  $1,020 sales, $320 estimated wages, $96 purchases, 31.37% ratio, and four alerts.
+- The unconfigured hosted API returned 503 instead of substituting sample data.
+- No shared persistent backend has been deployed. Browser-local imports in the
+  hosted demo remain distinct from the working local FastAPI/SQLite stack.
