@@ -1,0 +1,11 @@
+.git
+node_modules
+backend
+work
+*.png
+.env*
+.venv
+.pytest_cache
+__pycache__
+test-results
+playwright-report

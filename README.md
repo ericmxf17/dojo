@@ -102,3 +102,35 @@ the frontend origin through `SIDEWORK_CORS_ORIGINS`. If API-key access is enable
 a trusted server-side proxy must inject that key; never ship it in browser code.
 Production accounts, tenant isolation, provider integrations, and backups remain
 future work. This is a single-restaurant demonstration.
+
+## Vercel deployment
+
+`vercel.json` selects TanStack Start. Nitro automatically selects its Vercel
+adapter on Vercel; locally verify the target using:
+
+```sh
+NITRO_PRESET=vercel bun run build
+```
+
+The hosted build defaults to explicitly labeled **Sample data**, with browser-local
+imports, unless configured otherwise. This gives the judge a working demo without
+pretending the laptop's SQLite database is hosted. It is not shared cloud storage.
+The local development build still defaults to Connected API.
+
+For shared persistent backend operation, host FastAPI on a service with persistent
+storage, then set these Vercel environment variables and redeploy:
+
+- `SIDEWORK_BACKEND_URL`: server-only HTTPS backend address.
+- `SIDEWORK_API_KEY`: server-only optional backend credential.
+- `VITE_SIDEWORK_DEFAULT_MODE=live`: build-time default connected mode.
+
+The production server now proxies `/sidework-api/api/*` and
+`/sidework-api/health` to that configured backend, preserving multipart uploads and
+validation errors without forwarding browser cookies. It returns a clear 503
+when no backend is configured, and 502 on network failure. It never substitutes
+sample responses. Users can still explicitly select sample mode in the UI.
+
+Do not host this SQLite file in a Vercel function's temporary filesystem and call
+it persistent. No original local database or uploaded restaurant files are included
+in the Vercel deployment. `.vercelignore` excludes the Python backend and local
+runtime files from the frontend upload.

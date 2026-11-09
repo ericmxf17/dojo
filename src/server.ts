@@ -1,3 +1,4 @@
+import { proxyBackend } from "./lib/backend-proxy";
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
@@ -50,6 +51,11 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const apiResponse = await proxyBackend(request, {
+        ...(process.env["SIDEWORK_BACKEND_URL"] ? { url: process.env["SIDEWORK_BACKEND_URL"] } : {}),
+        ...(process.env["SIDEWORK_API_KEY"] ? { apiKey: process.env["SIDEWORK_API_KEY"] } : {}),
+      });
+      if (apiResponse) return apiResponse;
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

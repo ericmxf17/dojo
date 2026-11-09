@@ -39,3 +39,6 @@ backend/data/
 playwright-report/
 test-results/
 .env
+
+.vercel/
+.vercel

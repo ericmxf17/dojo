@@ -41,3 +41,10 @@ Run `./scripts/check.sh` after installing with `./dev.sh`.
 Browser checks are manual validation, not a committed Playwright test suite.
 The development server required a page reload after context-module hot updates;
 verification continued after reloading. No external vendor API was exercised.
+
+## Vercel gateway checks
+
+Eight additional tests verify path scoping, explicit missing-backend errors,
+server-only credential injection, multipart byte preservation, backend validation
+status preservation, unreachable-backend handling, invalid target configuration,
+and allowed methods. TypeScript and a Vercel-targeted production build also pass.
