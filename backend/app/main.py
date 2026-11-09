@@ -17,6 +17,7 @@ from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
+from .workspace import SCHEMA, register_workspace
 
 ROOT = Path(__file__).resolve().parent.parent
 KINDS = {
@@ -35,8 +36,8 @@ def authenticate(key: str | None = Depends(header)):
         raise HTTPException(401, 'A valid X-API-Key header is required.')
 
 
-app = FastAPI(title='Side Work', version='0.1.0', description='Single-restaurant demo backend. Import CSV records, review daily operations, and trace every finding to its source. No live vendor connections or generative AI are enabled.', dependencies=[Depends(authenticate)])
-app.add_middleware(CORSMiddleware, allow_origins=[s.strip() for s in os.getenv('SIDEWORK_CORS_ORIGINS', 'http://localhost:3000,http://localhost:8080').split(',') if s.strip()], allow_methods=['GET', 'POST'], allow_headers=['Content-Type', 'X-API-Key'])
+app = FastAPI(title='Side Work', version='0.2.0', description='Single-restaurant demo backend. Import CSV records, review daily operations, and trace every finding to its source. No live vendor connections or generative AI are enabled.', dependencies=[Depends(authenticate)])
+app.add_middleware(CORSMiddleware, allow_origins=[s.strip() for s in os.getenv('SIDEWORK_CORS_ORIGINS', 'http://localhost:3000,http://localhost:8080').split(',') if s.strip()], allow_methods=['GET', 'POST', 'PUT'], allow_headers=['Content-Type', 'X-API-Key'])
 
 
 @contextmanager
@@ -63,6 +64,7 @@ def db():
           import_id TEXT PRIMARY KEY REFERENCES imports(id), rows TEXT NOT NULL
         );
     ''')
+    conn.executescript(SCHEMA)
     try:
         yield conn
         conn.commit()
@@ -368,3 +370,6 @@ def ask(body: Question):
 @app.get('/api/integrations', tags=['Setup'])
 def integrations():
     return {'connections': [{'provider': name, 'status': 'not_connected', 'live_sync': False} for name in ['Toast', 'Resy']], 'available_now': 'Validated CSV imports', 'note': 'Provider-authorized API access is required before live connectors can be enabled. No provider credentials are collected by this demo.'}
+
+
+register_workspace(app, db, records, source, preview)
