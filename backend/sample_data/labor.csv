@@ -1,0 +1,5 @@
+external_id,date,employee,hours,hourly_rate
+shift-001,2026-11-08,Employee A,7,20.00
+shift-002,2026-11-08,Employee B,7,20.00
+shift-003,2026-11-09,Employee A,8,20.00
+shift-004,2026-11-09,Employee B,8,20.00

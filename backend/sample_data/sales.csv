@@ -1,0 +1,5 @@
+external_id,date,item,quantity,net_sales
+sale-001,2026-11-08,Latte,90,540.00
+sale-002,2026-11-08,Sandwich,40,480.00
+sale-003,2026-11-09,Latte,100,600.00
+sale-004,2026-11-09,Sandwich,35,420.00

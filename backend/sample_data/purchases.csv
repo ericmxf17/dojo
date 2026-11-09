@@ -1,0 +1,4 @@
+external_id,date,supplier,ingredient,quantity,unit,total_cost
+purchase-001,2026-11-08,Local Dairy,Milk,20,l,60.00
+purchase-002,2026-11-09,Local Dairy,Milk,20,l,72.00
+purchase-003,2026-11-09,Market Greens,Spinach,3,kg,24.00

@@ -1,0 +1,4 @@
+external_id,date,ingredient,quantity,unit,expires_on,low_stock_threshold
+snapshot-001,2026-11-09,Milk,4,l,2026-11-11,5
+snapshot-002,2026-11-09,Spinach,2,kg,2026-11-10,1
+snapshot-003,2026-11-09,Coffee beans,12,kg,2027-01-01,3
