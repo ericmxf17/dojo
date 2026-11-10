@@ -23,7 +23,7 @@ beforeAll(async () => {
   const port = (socket.address() as { port: number }).port;
   await new Promise<void>(r => socket.close(() => r()));
   url = `http://127.0.0.1:${port}`;
-  child = spawn(path.resolve('backend/.venv/bin/python'), ['-m', 'uvicorn', 'app.main:app', '--host', '127.0.0.1', '--port', String(port)], {
+  child = spawn(process.env['SIDEWORK_TEST_PYTHON'] ?? 'python3', ['-m', 'uvicorn', 'app.main:app', '--host', '127.0.0.1', '--port', String(port)], {
     cwd: path.resolve('backend'), env: { ...process.env, SIDEWORK_DB: path.join(scratch, 'test.db'), SIDEWORK_API_KEY: '' }, stdio: 'pipe',
   });
   for (let i = 0; i < 100; i++) {

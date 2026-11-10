@@ -4,14 +4,18 @@ import { createLiveApi, createSampleApi, type SideWorkApi } from "./api";
 import type { RecordKind, SourceRef } from "./types";
 
 export const DEFAULT_DATE = "2026-11-09";
-export const DEFAULT_API_URL = (import.meta.env["VITE_SIDEWORK_API_URL"] as string | undefined) ?? "/sidework-api";
+export const DEFAULT_API_URL =
+  (import.meta.env["VITE_SIDEWORK_API_URL"] as string | undefined) ?? "/sidework-api";
 
 type Mode = "sample" | "live";
 // Hosted demo defaults to clearly labeled browser-local sample data until a
 // persistent backend is configured. Local development still starts connected.
-export const DEFAULT_MODE: Mode = import.meta.env["VITE_SIDEWORK_DEFAULT_MODE"] === "live" ? "live"
-  : import.meta.env["VITE_SIDEWORK_DEFAULT_MODE"] === "sample" ? "sample"
-  : import.meta.env.PROD && !import.meta.env["VITE_SIDEWORK_API_URL"] ? "sample" : "live";
+export const DEFAULT_MODE: Mode =
+  import.meta.env["VITE_SIDEWORK_DEFAULT_MODE"] === "live"
+    ? "live"
+    : import.meta.env["VITE_SIDEWORK_DEFAULT_MODE"] === "sample"
+      ? "sample"
+      : "sample";
 
 interface Settings {
   mode: Mode;
@@ -77,33 +81,71 @@ export function useSideWork() {
 /* Query hooks — keys include mode + backend so modes never share cache. */
 export function useBriefing() {
   const { api, keyBase, date } = useSideWork();
-  return useQuery({ queryKey: [...keyBase, "briefing", date], queryFn: () => api.briefing(date), retry: false });
+  return useQuery({
+    queryKey: [...keyBase, "briefing", date],
+    queryFn: () => api.briefing(date),
+    retry: false,
+  });
 }
 export function useInventory() {
   const { api, keyBase, date } = useSideWork();
-  return useQuery({ queryKey: [...keyBase, "inventory", date], queryFn: () => api.inventory(date), retry: false });
+  return useQuery({
+    queryKey: [...keyBase, "inventory", date],
+    queryFn: () => api.inventory(date),
+    retry: false,
+  });
 }
 export function useRecords(kind: RecordKind, on: string | null, limit: number, offset: number) {
   const { api, keyBase } = useSideWork();
-  return useQuery({ queryKey: [...keyBase, "records", kind, on, limit, offset], queryFn: () => api.listRecords(kind, on, limit, offset), retry: false });
+  return useQuery({
+    queryKey: [...keyBase, "records", kind, on, limit, offset],
+    queryFn: () => api.listRecords(kind, on, limit, offset),
+    retry: false,
+  });
 }
 export function useRecord(id: string | null) {
   const { api, keyBase } = useSideWork();
-  return useQuery({ queryKey: [...keyBase, "record", id], queryFn: () => api.getRecord(id!), enabled: !!id, retry: false });
+  return useQuery({
+    queryKey: [...keyBase, "record", id],
+    queryFn: () => {
+      if (!id) throw new Error("No record selected");
+      return api.getRecord(id);
+    },
+    enabled: !!id,
+    retry: false,
+  });
 }
 export function useImports() {
   const { api, keyBase } = useSideWork();
-  return useQuery({ queryKey: [...keyBase, "imports"], queryFn: () => api.listImports(), retry: false });
+  return useQuery({
+    queryKey: [...keyBase, "imports"],
+    queryFn: () => api.listImports(),
+    retry: false,
+  });
 }
 export function useTemplates() {
   const { api, keyBase } = useSideWork();
-  return useQuery({ queryKey: [...keyBase, "templates"], queryFn: () => api.templates(), retry: false });
+  return useQuery({
+    queryKey: [...keyBase, "templates"],
+    queryFn: () => api.templates(),
+    retry: false,
+  });
 }
 export function useIntegrations() {
   const { api, keyBase } = useSideWork();
-  return useQuery({ queryKey: [...keyBase, "integrations"], queryFn: () => api.integrations(), retry: false });
+  return useQuery({
+    queryKey: [...keyBase, "integrations"],
+    queryFn: () => api.integrations(),
+    retry: false,
+  });
 }
 export function useHealth() {
   const { api, keyBase, mode } = useSideWork();
-  return useQuery({ queryKey: [...keyBase, "health"], queryFn: () => api.health(), retry: false, enabled: mode === "live", refetchInterval: 30000 });
+  return useQuery({
+    queryKey: [...keyBase, "health"],
+    queryFn: () => api.health(),
+    retry: false,
+    enabled: mode === "live",
+    refetchInterval: 30000,
+  });
 }

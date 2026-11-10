@@ -13,15 +13,28 @@ export function LoadingBlock({ rows = 3, label = "Loading" }: { rows?: number; l
   );
 }
 
-export function ErrorState({ error, onRetry, title = "Couldn't load this" }: { error: unknown; onRetry?: (() => void) | undefined; title?: string }) {
+export function ErrorState({
+  error,
+  onRetry,
+  title = "Couldn't load this",
+}: {
+  error: unknown;
+  onRetry?: (() => void) | undefined;
+  title?: string;
+}) {
   const msg = error instanceof Error ? error.message : String(error);
   return (
-    <div role="alert" className="panel flex flex-col items-start gap-3 border-primary/40 bg-alert-soft p-5">
+    <div
+      role="alert"
+      className="panel flex flex-col items-start gap-3 border-primary/40 bg-warning-surface p-5"
+    >
       <div className="flex items-center gap-2 font-medium text-primary">
         <AlertCircle className="size-4" aria-hidden /> {title}
       </div>
       <p className="text-sm text-foreground/80">{msg}</p>
-      <p className="text-xs text-muted-foreground">Side Work did not switch to sample data. Fix the connection or change modes in the sidebar.</p>
+      <p className="text-xs text-muted-foreground">
+        Side Work did not switch to sample data. Fix the connection or change modes in the sidebar.
+      </p>
       {onRetry && (
         <Button variant="outline" size="sm" onClick={onRetry}>
           <RotateCw /> Retry
@@ -31,7 +44,15 @@ export function ErrorState({ error, onRetry, title = "Couldn't load this" }: { e
   );
 }
 
-export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
+export function EmptyState({
+  title,
+  children,
+  action,
+}: {
+  title: string;
+  children?: ReactNode;
+  action?: ReactNode;
+}) {
   return (
     <div className="flex flex-col items-center gap-2 rounded-md border border-dashed border-border px-6 py-10 text-center">
       <Inbox className="size-5 text-muted-foreground" aria-hidden />

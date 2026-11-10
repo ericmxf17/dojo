@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
+  useRouterState,
   Link,
   createRootRouteWithContext,
   useRouter,
@@ -10,11 +11,11 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
-import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SideWorkProvider } from "@/lib/sidework/context";
 import { AppShell } from "@/components/sidework/AppShell";
 import { Toaster } from "@/components/ui/sonner";
+import appCss from "../styles.css?url";
+import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
@@ -84,10 +85,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Side Work — Daily briefings for independent restaurants" },
-      { name: "description", content: "Side Work turns your restaurant records into a clear daily briefing." },
-      { property: "og:title", content: "Side Work" },
-      { property: "og:description", content: "Side Work turns your restaurant records into a clear daily briefing." },
+      { title: "Sidework" },
+      { name: "description", content: "Sidework keeps restaurant side work on track." },
+      { property: "og:title", content: "Sidework" },
+      { property: "og:description", content: "Sidework keeps restaurant side work on track." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -97,10 +98,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -125,16 +128,21 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const isHome = useRouterState({ select: (s) => s.location.pathname === "/" });
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <SideWorkProvider>
-        <AppShell>
+        {isHome ? (
           <Outlet />
-        </AppShell>
-        <Toaster />
+        ) : (
+          <AppShell>
+            <Outlet />
+          </AppShell>
+        )}
       </SideWorkProvider>
+      <Toaster />
     </QueryClientProvider>
   );
 }

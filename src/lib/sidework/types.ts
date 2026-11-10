@@ -57,7 +57,9 @@ export interface Briefing {
   currency: string;
   metrics: BriefingMetrics;
   previous_day: { date: string; metrics: BriefingMetrics } | null;
-  changes_vs_previous_day: Partial<Record<"net_sales" | "estimated_wages" | "recorded_purchases", MetricChange>>;
+  changes_vs_previous_day: Partial<
+    Record<"net_sales" | "estimated_wages" | "recorded_purchases", MetricChange>
+  >;
   alerts: Alert[];
   missing_data: string[];
   inventory_as_of: string | null;

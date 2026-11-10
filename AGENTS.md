@@ -29,7 +29,8 @@ use the editor.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
 
-## Side Work architecture
-- All data access goes through `src/lib/sidework/api.ts` (`SideWorkApi`), with sample and live implementations sharing the types in `types.ts`; why: modes must stay interchangeable and never silently fall back.
-- Sample-mode business rules (metrics, alerts, inventory, ask) live as pure functions in `engine.ts`, covered by `src/test/sidework.test.ts`; why: they're testable without a browser.
-- Query keys start with `["sw", mode, backend]` and successful imports invalidate that whole prefix; why: every page reads the same records.
+## Frontend architecture
+- Keep public content and each owner workspace in separate TanStack file routes; the shared owner shell lives in a browser-safe component to keep the homepage independent.
+- Route all demonstration workflows through the typed sidework service layer; persist demo metadata locally and document bytes in IndexedDB so file versions remain independent without claiming cloud storage.
+- Preserve the imported FastAPI backend unchanged and extend its existing typed adapter in workspace-api; the published frontend requires a separately hosted HTTPS API with appropriate access control because Python/SQLite cannot run in the Worker.
+- Never fall back from Connected API to sample data; use mode-and-address-isolated query caches so connection failures remain visible.

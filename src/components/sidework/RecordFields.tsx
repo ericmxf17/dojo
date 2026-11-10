@@ -3,7 +3,10 @@ import { formatCents, formatDate } from "@/lib/sidework/format";
 import { kindLabel, type RecordValue, type StoredRecord } from "@/lib/sidework/types";
 
 export function fieldLabel(k: string) {
-  return k.replace(/_cents$/, "").replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+  return k
+    .replace(/_cents$/, "")
+    .replace(/_/g, " ")
+    .replace(/^\w/, (c) => c.toUpperCase());
 }
 
 export function formatField(k: string, v: RecordValue | undefined): string {
@@ -37,7 +40,12 @@ export function RecordFields({ record }: { record: StoredRecord }) {
         <>
           <dt className="text-muted-foreground">Link</dt>
           <dd>
-            <a className="text-cobalt underline" href={sourceUrl ?? undefined} target="_blank" rel="noreferrer">
+            <a
+              className="text-primary underline"
+              href={sourceUrl ?? undefined}
+              target="_blank"
+              rel="noreferrer"
+            >
               Open API source record
             </a>
           </dd>

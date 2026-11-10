@@ -1,7 +1,25 @@
 // Typed service layer. Both modes implement the same interface and return the same shapes.
 import { MAX_FILE_BYTES, sampleTemplates, validateCsv } from "./csv";
-import { answerQuestion, computeAlerts, computeBriefing, computeInventory, listRecords, type SampleState } from "./engine";
-import { normalizeAlert, normalizeAnswer, normalizeBriefing, normalizeImport, normalizeInventory, normalizeRecord, type WireRecord, type WireImport, type WireBriefing, type WireInventory } from "./live-contract";
+import {
+  answerQuestion,
+  computeAlerts,
+  computeBriefing,
+  computeInventory,
+  listRecords,
+  type SampleState,
+} from "./engine";
+import {
+  normalizeAlert,
+  normalizeAnswer,
+  normalizeBriefing,
+  normalizeImport,
+  normalizeInventory,
+  normalizeRecord,
+  type WireRecord,
+  type WireImport,
+  type WireBriefing,
+  type WireInventory,
+} from "./live-contract";
 import { seedState } from "./seed";
 import type {
   Alert,
@@ -18,7 +36,11 @@ import type {
 } from "./types";
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number | null = null, public kind: "network" | "http" | "validation" = "http") {
+  constructor(
+    message: string,
+    public status: number | null = null,
+    public kind: "network" | "http" | "validation" = "http",
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -32,7 +54,12 @@ export interface SideWorkApi {
   commitImport(importId: string): Promise<ImportPreview>;
   listImports(): Promise<ImportPreview[]>;
   getImport(importId: string): Promise<ImportPreview>;
-  listRecords(kind: RecordKind, on: string | null, limit: number, offset: number): Promise<RecordList>;
+  listRecords(
+    kind: RecordKind,
+    on: string | null,
+    limit: number,
+    offset: number,
+  ): Promise<RecordList>;
   getRecord(recordId: string): Promise<StoredRecord>;
   briefing(on: string): Promise<Briefing>;
   inventory(on: string): Promise<InventoryResponse>;
@@ -42,8 +69,18 @@ export interface SideWorkApi {
 }
 
 const INTEGRATIONS: Integration[] = [
-  { id: "csv", name: "CSV imports", status: "available", description: "Upload sales, purchases, employee hours, and inventory as UTF-8 CSV files." },
-  { id: "toast", name: "Toast", status: "not_connected", description: "Point-of-sale sales and labor data." },
+  {
+    id: "csv",
+    name: "CSV imports",
+    status: "available",
+    description: "Upload sales, purchases, employee hours, and inventory as UTF-8 CSV files.",
+  },
+  {
+    id: "toast",
+    name: "Toast",
+    status: "not_connected",
+    description: "Point-of-sale sales and labor data.",
+  },
   { id: "resy", name: "Resy", status: "not_connected", description: "Reservations and covers." },
 ];
 
@@ -76,7 +113,7 @@ export function resetSampleData() {
   saveState();
 }
 
-const delay = <T,>(v: T, ms = 120) => new Promise<T>((r) => setTimeout(() => r(v), ms));
+const delay = <T>(v: T, ms = 120) => new Promise<T>((r) => setTimeout(() => r(v), ms));
 
 function hashText(s: string): string {
   let h = 5381;
@@ -95,15 +132,31 @@ export function createSampleApi(): SideWorkApi {
     health: () => delay({ status: "ok" }),
     templates: () => delay(sampleTemplates()),
     async previewImport(kind, file) {
-      if (file.size > MAX_FILE_BYTES) throw new ApiError("This file is larger than 2 MB. Split it into smaller files and try again.", 413, "validation");
-      if (!/\.csv$/i.test(file.name)) throw new ApiError("Only .csv files are supported. PDFs, photos, and spreadsheets can't be read.", 415, "validation");
+      if (file.size > MAX_FILE_BYTES)
+        throw new ApiError(
+          "This file is larger than 2 MB. Split it into smaller files and try again.",
+          413,
+          "validation",
+        );
+      if (!/\.csv$/i.test(file.name))
+        throw new ApiError(
+          "Only .csv files are supported. PDFs, photos, and spreadsheets can't be read.",
+          415,
+          "validation",
+        );
       const text = await file.text();
       const s = loadState();
       const hash = hashText(`${kind}:${text}`);
       const { rows, errors } = validateCsv(kind, text);
       const dup = s.imports.find((i) => i.file_hash === hash && i.status === "committed");
-      if (dup) errors.unshift({ row: null, message: `This exact file was already imported as “${dup.filename}”. Importing it again would double-count records.` });
-      const existing = new Map(s.records.filter((r) => r.kind === kind).map((r) => [r.source.external_id, r]));
+      if (dup)
+        errors.unshift({
+          row: null,
+          message: `This exact file was already imported as “${dup.filename}”. Importing it again would double-count records.`,
+        });
+      const existing = new Map(
+        s.records.filter((r) => r.kind === kind).map((r) => [r.source.external_id, r]),
+      );
       for (const r of rows) {
         const ext = String(r.data.external_id ?? "");
         const prior = existing.get(ext);
@@ -138,14 +191,34 @@ export function createSampleApi(): SideWorkApi {
     async commitImport(importId) {
       const s = loadState();
       const imp = s.imports.find((i) => i.id === importId);
-      if (!imp) throw new ApiError("That import preview no longer exists. Upload the file again.", 404);
+      if (!imp)
+        throw new ApiError("That import preview no longer exists. Upload the file again.", 404);
       if (imp.status === "committed") return delay(publicImport(imp));
-      if (imp.status === "invalid") throw new ApiError("This file has errors and can't be imported.", 422, "validation");
-      const ids = new Set(s.records.filter(r => r.kind === imp.kind).map(r => r.source.external_id));
-      if ((imp.pending_rows ?? []).some(r => ids.has(String(r.data.external_id)))) throw new ApiError("Existing external IDs; entire import rejected. Refresh and upload a corrected file.", 409);
+      if (imp.status === "invalid")
+        throw new ApiError("This file has errors and can't be imported.", 422, "validation");
+      const ids = new Set(
+        s.records.filter((r) => r.kind === imp.kind).map((r) => r.source.external_id),
+      );
+      if ((imp.pending_rows ?? []).some((r) => ids.has(String(r.data.external_id))))
+        throw new ApiError(
+          "Existing external IDs; entire import rejected. Refresh and upload a corrected file.",
+          409,
+        );
       for (const r of imp.pending_rows ?? []) {
         const id = `${imp.id}-r${r.row_number}`;
-        s.records.push({ id, kind: imp.kind, data: r.data, source: { record_id: id, import_id: imp.id, filename: imp.filename, row_number: r.row_number, external_id: String(r.data.external_id), url: null } });
+        s.records.push({
+          id,
+          kind: imp.kind,
+          data: r.data,
+          source: {
+            record_id: id,
+            import_id: imp.id,
+            filename: imp.filename,
+            row_number: r.row_number,
+            external_id: String(r.data.external_id),
+            url: null,
+          },
+        });
       }
       imp.status = "committed";
       imp.committed_at = new Date().toISOString();
@@ -159,7 +232,8 @@ export function createSampleApi(): SideWorkApi {
       if (!imp) throw new ApiError("Import not found.", 404);
       return delay(publicImport(imp));
     },
-    listRecords: (kind, on, limit, offset) => delay(listRecords(loadState(), kind, on, limit, offset)),
+    listRecords: (kind, on, limit, offset) =>
+      delay(listRecords(loadState(), kind, on, limit, offset)),
     async getRecord(id) {
       const r = loadState().records.find((x) => x.id === id);
       if (!r) throw new ApiError("Record not found.", 404);
@@ -182,7 +256,11 @@ export function createLiveApi(baseUrl: string): SideWorkApi {
     try {
       res = await fetch(`${root}${path}`, init);
     } catch {
-      throw new ApiError(`Couldn't reach the Side Work server at ${root}. Check that it is running, reachable over the network, and allows requests from this site (CORS).`, null, "network");
+      throw new ApiError(
+        `Couldn't reach the Side Work server at ${root}. Check that it is running, reachable over the network, and allows requests from this site (CORS).`,
+        null,
+        "network",
+      );
     }
     if (!res.ok) {
       let msg = `The server responded with ${res.status}.`;
@@ -190,7 +268,13 @@ export function createLiveApi(baseUrl: string): SideWorkApi {
         const body = await res.json();
         const d = body?.detail ?? body?.message;
         if (typeof d === "string") msg = d;
-        else if (d && typeof d === "object" && !Array.isArray(d)) msg = [d.message, d.external_ids?.length ? `Conflicting IDs: ${d.external_ids.join(", ")}` : null].filter(Boolean).join(" ");
+        else if (d && typeof d === "object" && !Array.isArray(d))
+          msg = [
+            d.message,
+            d.external_ids?.length ? `Conflicting IDs: ${d.external_ids.join(", ")}` : null,
+          ]
+            .filter(Boolean)
+            .join(" ");
         else if (Array.isArray(d)) msg = d.map((x) => x?.msg ?? JSON.stringify(x)).join("; ");
       } catch {
         /* keep default */
@@ -200,40 +284,81 @@ export function createLiveApi(baseUrl: string): SideWorkApi {
     }
     return res.json() as Promise<T>;
   }
-  const json = (body: unknown): RequestInit => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const asList = <T,>(v: unknown, key: string): T[] => (Array.isArray(v) ? (v as T[]) : (((v as Record<string, unknown>)?.[key] as T[]) ?? []));
+  const json = (body: unknown): RequestInit => ({
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const asList = <T>(v: unknown, key: string): T[] =>
+    Array.isArray(v) ? (v as T[]) : (((v as Record<string, unknown>)?.[key] as T[]) ?? []);
 
   return {
     mode: "live",
     health: () => req("/health"),
     templates: async () => {
       const v = await req<{ formats: Record<RecordKind, string[]> }>("/api/imports/templates");
-      return Object.entries(v.formats).map(([kind, headers]) => ({ kind: kind as RecordKind, headers, filename: `side-work-${kind}-template.csv` }));
+      return Object.entries(v.formats).map(([kind, headers]) => ({
+        kind: kind as RecordKind,
+        headers,
+        filename: `side-work-${kind}-template.csv`,
+      }));
     },
     previewImport(kind, file) {
-      if (file.size > MAX_FILE_BYTES) return Promise.reject(new ApiError("This file is larger than 2 MB.", 413, "validation"));
+      if (file.size > MAX_FILE_BYTES)
+        return Promise.reject(new ApiError("This file is larger than 2 MB.", 413, "validation"));
       const fd = new FormData();
       fd.append("file", file);
       // No Content-Type header: the browser sets the multipart boundary.
-      return req<WireImport>(`/api/imports/preview?kind=${kind}`, { method: "POST", body: fd }).then(normalizeImport);
+      return req<WireImport>(`/api/imports/preview?kind=${kind}`, {
+        method: "POST",
+        body: fd,
+      }).then(normalizeImport);
     },
-    commitImport: (id) => req<WireImport>(`/api/imports/${encodeURIComponent(id)}/commit`, { method: "POST" }).then(normalizeImport),
+    commitImport: (id) =>
+      req<WireImport>(`/api/imports/${encodeURIComponent(id)}/commit`, { method: "POST" }).then(
+        normalizeImport,
+      ),
     listImports: async () => (await req<WireImport[]>("/api/imports")).map(normalizeImport),
-    getImport: (id) => req<WireImport>(`/api/imports/${encodeURIComponent(id)}`).then(normalizeImport),
+    getImport: (id) =>
+      req<WireImport>(`/api/imports/${encodeURIComponent(id)}`).then(normalizeImport),
     listRecords: async (kind, on, limit, offset) => {
-      const v = await req<{ total: number; records: WireRecord[] }>(`/api/records?kind=${kind}${on ? `&on=${on}` : ""}&limit=${limit}&offset=${offset}`);
+      const v = await req<{ total: number; records: WireRecord[] }>(
+        `/api/records?kind=${kind}${on ? `&on=${on}` : ""}&limit=${limit}&offset=${offset}`,
+      );
       return { ...v, records: v.records.map(normalizeRecord) };
     },
-    getRecord: (id) => req<WireRecord>(`/api/records/${encodeURIComponent(id)}`).then(normalizeRecord),
+    getRecord: (id) =>
+      req<WireRecord>(`/api/records/${encodeURIComponent(id)}`).then(normalizeRecord),
     briefing: (on) => req<WireBriefing>(`/api/briefing?on=${on}`).then(normalizeBriefing),
     async inventory(on) {
       return normalizeInventory(await req<WireInventory>(`/api/inventory?on=${on}`), on);
     },
-    alerts: async (on) => asList<Parameters<typeof normalizeAlert>[0]>(await req(`/api/alerts?on=${on}`), "alerts").map(normalizeAlert),
-    ask: async (question, on) => normalizeAnswer(await req("/api/ask", json({ question, on })), question, on),
+    alerts: async (on) =>
+      asList<Parameters<typeof normalizeAlert>[0]>(await req(`/api/alerts?on=${on}`), "alerts").map(
+        normalizeAlert,
+      ),
+    ask: async (question, on) =>
+      normalizeAnswer(await req("/api/ask", json({ question, on })), question, on),
     integrations: async () => {
-      const v = await req<{ connections: { provider: string; status: "not_connected" }[] }>("/api/integrations");
-      return [INTEGRATIONS[0]!, ...v.connections.map(c => ({ id: c.provider.toLowerCase(), name: c.provider, status: c.status, description: INTEGRATIONS.find(i => i.id === c.provider.toLowerCase())?.description ?? "Provider integration" }))];
+      const v = await req<{ connections: { provider: string; status: "not_connected" }[] }>(
+        "/api/integrations",
+      );
+      return [
+        {
+          id: "csv",
+          name: "CSV imports",
+          status: "available" as const,
+          description: "Mapped CSV imports",
+        },
+        ...v.connections.map((c) => ({
+          id: c.provider.toLowerCase(),
+          name: c.provider,
+          status: c.status,
+          description:
+            INTEGRATIONS.find((i) => i.id === c.provider.toLowerCase())?.description ??
+            "Provider integration",
+        })),
+      ];
     },
   };
 }

@@ -11,10 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AskRouteImport } from './routes/ask'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as ConnectionsRouteImport } from './routes/connections'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as ImportsRouteImport } from './routes/imports'
 import { Route as PantryRouteImport } from './routes/pantry'
+import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as RecordsRouteImport } from './routes/records'
+import { Route as ProvidersProviderRouteImport } from './routes/providers.$provider'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -26,9 +31,24 @@ const AskRoute = AskRouteImport.update({
   path: '/ask',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConnectionsRoute = ConnectionsRouteImport.update({
   id: '/connections',
   path: '/connections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentsRoute = DocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ImportsRoute = ImportsRouteImport.update({
@@ -41,59 +61,116 @@ const PantryRoute = PantryRouteImport.update({
   path: '/pantry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PayrollRoute = PayrollRouteImport.update({
+  id: '/payroll',
+  path: '/payroll',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RecordsRoute = RecordsRouteImport.update({
   id: '/records',
   path: '/records',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProvidersProviderRoute = ProvidersProviderRouteImport.update({
+  id: '/providers/$provider',
+  path: '/providers/$provider',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/calendar': typeof CalendarRoute
   '/connections': typeof ConnectionsRoute
+  '/dashboard': typeof DashboardRoute
+  '/documents': typeof DocumentsRoute
   '/imports': typeof ImportsRoute
   '/pantry': typeof PantryRoute
+  '/payroll': typeof PayrollRoute
   '/records': typeof RecordsRoute
+  '/providers/$provider': typeof ProvidersProviderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/calendar': typeof CalendarRoute
   '/connections': typeof ConnectionsRoute
+  '/dashboard': typeof DashboardRoute
+  '/documents': typeof DocumentsRoute
   '/imports': typeof ImportsRoute
   '/pantry': typeof PantryRoute
+  '/payroll': typeof PayrollRoute
   '/records': typeof RecordsRoute
+  '/providers/$provider': typeof ProvidersProviderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
+  '/calendar': typeof CalendarRoute
   '/connections': typeof ConnectionsRoute
+  '/dashboard': typeof DashboardRoute
+  '/documents': typeof DocumentsRoute
   '/imports': typeof ImportsRoute
   '/pantry': typeof PantryRoute
+  '/payroll': typeof PayrollRoute
   '/records': typeof RecordsRoute
+  '/providers/$provider': typeof ProvidersProviderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ask' | '/connections' | '/imports' | '/pantry' | '/records'
+  fullPaths:
+    | '/'
+    | '/ask'
+    | '/calendar'
+    | '/connections'
+    | '/dashboard'
+    | '/documents'
+    | '/imports'
+    | '/pantry'
+    | '/payroll'
+    | '/records'
+    | '/providers/$provider'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ask' | '/connections' | '/imports' | '/pantry' | '/records'
+  to:
+    | '/'
+    | '/ask'
+    | '/calendar'
+    | '/connections'
+    | '/dashboard'
+    | '/documents'
+    | '/imports'
+    | '/pantry'
+    | '/payroll'
+    | '/records'
+    | '/providers/$provider'
   id:
     | '__root__'
     | '/'
     | '/ask'
+    | '/calendar'
     | '/connections'
+    | '/dashboard'
+    | '/documents'
     | '/imports'
     | '/pantry'
+    | '/payroll'
     | '/records'
+    | '/providers/$provider'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AskRoute: typeof AskRoute
+  CalendarRoute: typeof CalendarRoute
   ConnectionsRoute: typeof ConnectionsRoute
+  DashboardRoute: typeof DashboardRoute
+  DocumentsRoute: typeof DocumentsRoute
   ImportsRoute: typeof ImportsRoute
   PantryRoute: typeof PantryRoute
+  PayrollRoute: typeof PayrollRoute
   RecordsRoute: typeof RecordsRoute
+  ProvidersProviderRoute: typeof ProvidersProviderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -112,11 +189,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AskRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/connections': {
       id: '/connections'
       path: '/connections'
       fullPath: '/connections'
       preLoaderRoute: typeof ConnectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documents': {
+      id: '/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof DocumentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/imports': {
@@ -133,11 +231,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PantryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payroll': {
+      id: '/payroll'
+      path: '/payroll'
+      fullPath: '/payroll'
+      preLoaderRoute: typeof PayrollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/records': {
       id: '/records'
       path: '/records'
       fullPath: '/records'
       preLoaderRoute: typeof RecordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/providers/$provider': {
+      id: '/providers/$provider'
+      path: '/providers/$provider'
+      fullPath: '/providers/$provider'
+      preLoaderRoute: typeof ProvidersProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -146,10 +258,15 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AskRoute: AskRoute,
+  CalendarRoute: CalendarRoute,
   ConnectionsRoute: ConnectionsRoute,
+  DashboardRoute: DashboardRoute,
+  DocumentsRoute: DocumentsRoute,
   ImportsRoute: ImportsRoute,
   PantryRoute: PantryRoute,
+  PayrollRoute: PayrollRoute,
   RecordsRoute: RecordsRoute,
+  ProvidersProviderRoute: ProvidersProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,5 +1,9 @@
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-const usd0 = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const usd0 = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 
 export function formatCents(cents: number | null | undefined, opts?: { whole?: boolean }): string {
   if (cents === null || cents === undefined) return "—";
@@ -19,11 +23,27 @@ export function formatPercent(p: number | null | undefined, digits = 2): string 
   return `${p.toFixed(digits)}%`;
 }
 
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 /** Formats a YYYY-MM-DD business date without timezone shifts. */
-export function formatDate(iso: string | null | undefined, opts?: { weekday?: boolean; short?: boolean }): string {
+export function formatDate(
+  iso: string | null | undefined,
+  opts?: { weekday?: boolean; short?: boolean },
+): string {
   if (!iso) return "—";
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   if (!m) return iso;

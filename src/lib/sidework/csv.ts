@@ -125,12 +125,20 @@ export function validateCsv(kind: RecordKind, text: string): ValidationResult {
   const errors: ImportError[] = [];
   const out: ValidationResult["rows"] = [];
   if (text.includes("\uFFFD")) {
-    errors.push({ row: null, message: "The file does not appear to be UTF-8 text. Save it as “CSV UTF-8” and try again." });
+    errors.push({
+      row: null,
+      message: "The file does not appear to be UTF-8 text. Save it as “CSV UTF-8” and try again.",
+    });
     return { rows: out, errors };
   }
   let table: string[][];
-  try { table = parseCsv(text); } catch (e) {
-    return { rows: out, errors: [{ row: null, message: e instanceof Error ? e.message : "Invalid CSV" }] };
+  try {
+    table = parseCsv(text);
+  } catch (e) {
+    return {
+      rows: out,
+      errors: [{ row: null, message: e instanceof Error ? e.message : "Invalid CSV" }],
+    };
   }
   if (table.length === 0) {
     errors.push({ row: null, message: "The file is empty." });
@@ -139,21 +147,36 @@ export function validateCsv(kind: RecordKind, text: string): ValidationResult {
   const header = table[0] ?? [];
   const schema = SCHEMAS[kind];
   const missing = schema.filter((f) => f.required && !header.includes(f.name)).map((f) => f.name);
-  if (missing.length || new Set(header).size !== header.length || header.length !== schema.length || header.some(h => !schema.some(f => f.name === h))) {
-    errors.push({ row: 1, message: `Headers must exactly match: ${schema.map(f => f.name).join(", ")}. Download the template for the expected headers.` });
+  if (
+    missing.length ||
+    new Set(header).size !== header.length ||
+    header.length !== schema.length ||
+    header.some((h) => !schema.some((f) => f.name === h))
+  ) {
+    errors.push({
+      row: 1,
+      message: `Headers must exactly match: ${schema.map((f) => f.name).join(", ")}. Download the template for the expected headers.`,
+    });
     return { rows: out, errors };
   }
   const body = table.slice(1);
-  if (body.length === 0) errors.push({ row: null, message: "The file has headers but no records." });
+  if (body.length === 0)
+    errors.push({ row: null, message: "The file has headers but no records." });
   if (body.length > MAX_RECORDS) {
-    errors.push({ row: null, message: `The file has ${body.length.toLocaleString()} records. The limit is ${MAX_RECORDS.toLocaleString()}.` });
+    errors.push({
+      row: null,
+      message: `The file has ${body.length.toLocaleString()} records. The limit is ${MAX_RECORDS.toLocaleString()}.`,
+    });
     return { rows: out, errors };
   }
   const seen = new Map<string, number>();
   body.forEach((cells, i) => {
     const rowNumber = i + 2;
     if (cells.length !== header.length) {
-      errors.push({ row: rowNumber, message: `Expected ${header.length} columns but found ${cells.length}.` });
+      errors.push({
+        row: rowNumber,
+        message: `Expected ${header.length} columns but found ${cells.length}.`,
+      });
       return;
     }
     const data: RecordData = {};
@@ -161,32 +184,67 @@ export function validateCsv(kind: RecordKind, text: string): ValidationResult {
       const idx = header.indexOf(f.name);
       const raw = idx >= 0 ? (cells[idx] ?? "").trim() : "";
       if (raw === "") {
-        if (f.required) errors.push({ row: rowNumber, field: f.name, message: `${f.name} is required.` });
+        if (f.required)
+          errors.push({ row: rowNumber, field: f.name, message: `${f.name} is required.` });
         data[f.name] = null;
         continue;
       }
       if (f.type === "date") {
-        if (!isValidDate(raw)) errors.push({ row: rowNumber, field: f.name, message: `“${raw}” is not a valid date. Use YYYY-MM-DD.` });
+        if (!isValidDate(raw))
+          errors.push({
+            row: rowNumber,
+            field: f.name,
+            message: `“${raw}” is not a valid date. Use YYYY-MM-DD.`,
+          });
         data[f.name] = raw;
       } else if (f.type === "money") {
         const n = Number(raw);
-        if (!/^\d+(?:\.\d{1,2})?$/.test(raw) || !Number.isFinite(n) || n > 1_000_000_000) errors.push({ row: rowNumber, field: f.name, message: `${f.name} must be a nonnegative dollar amount with at most two decimals.` });
-        data[f.name === "net_sales" ? "net_sales_cents" : f.name === "total_cost" ? "total_cost_cents" : "hourly_rate_cents"] = Math.round(n * 100);
+        if (!/^\d+(?:\.\d{1,2})?$/.test(raw) || !Number.isFinite(n) || n > 1_000_000_000)
+          errors.push({
+            row: rowNumber,
+            field: f.name,
+            message: `${f.name} must be a nonnegative dollar amount with at most two decimals.`,
+          });
+        data[
+          f.name === "net_sales"
+            ? "net_sales_cents"
+            : f.name === "total_cost"
+              ? "total_cost_cents"
+              : "hourly_rate_cents"
+        ] = Math.round(n * 100);
       } else if (f.type === "number") {
         const n = Number(raw);
-        if (!Number.isFinite(n)) errors.push({ row: rowNumber, field: f.name, message: `“${raw}” is not a number.` });
-        else if (n < 0 || n > 1_000_000_000) errors.push({ row: rowNumber, field: f.name, message: `${f.name} cannot be negative.` });
-        if (f.name === "quantity" && kind !== "inventory" && n === 0) errors.push({ row: rowNumber, field: f.name, message: "quantity must be positive." });
-        if (f.name === "hours" && n > 24) errors.push({ row: rowNumber, field: f.name, message: "hours cannot exceed 24 per record." });
+        if (!Number.isFinite(n))
+          errors.push({ row: rowNumber, field: f.name, message: `“${raw}” is not a number.` });
+        else if (n < 0 || n > 1_000_000_000)
+          errors.push({ row: rowNumber, field: f.name, message: `${f.name} cannot be negative.` });
+        if (f.name === "quantity" && kind !== "inventory" && n === 0)
+          errors.push({ row: rowNumber, field: f.name, message: "quantity must be positive." });
+        if (f.name === "hours" && n > 24)
+          errors.push({
+            row: rowNumber,
+            field: f.name,
+            message: "hours cannot exceed 24 per record.",
+          });
         data[f.name] = n;
       } else {
-        if (raw.length > 250) errors.push({ row: rowNumber, field: f.name, message: `${f.name} exceeds 250 characters.` });
+        if (raw.length > 250)
+          errors.push({
+            row: rowNumber,
+            field: f.name,
+            message: `${f.name} exceeds 250 characters.`,
+          });
         data[f.name] = f.name === "unit" ? raw.toLowerCase() : raw;
       }
     }
     const ext = String(data.external_id ?? "");
     if (ext) {
-      if (seen.has(ext)) errors.push({ row: rowNumber, field: "external_id", message: `external_id “${ext}” also appears on row ${seen.get(ext)}.` });
+      if (seen.has(ext))
+        errors.push({
+          row: rowNumber,
+          field: "external_id",
+          message: `external_id “${ext}” also appears on row ${seen.get(ext)}.`,
+        });
       else seen.set(ext, rowNumber);
     }
     out.push({ row_number: rowNumber, data: normalizeData(kind, data) });
