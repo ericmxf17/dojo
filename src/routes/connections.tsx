@@ -20,6 +20,13 @@ export const Route = createFileRoute("/connections")({
   component: Connections,
 });
 function Connections() {
+  const setup: Record<string, string> = {
+    toast: "Toast admin enables read-only API access and adds credentials on the server.",
+    "7shifts": "Create an access token in Company Settings → Developer Tools.",
+    marketman: "Request API Partner credentials from your MarketMan account manager.",
+    restaurant365: "Request approved API or Secure Data Share access from Restaurant365.",
+    resy: "Partner approval is required; use manual exports until then.",
+  };
   return (
     <div>
       <h1 className="mb-8 text-4xl font-medium">Your restaurant tools.</h1>
@@ -33,8 +40,9 @@ function Connections() {
           <div>
             <h2 className="text-xl font-medium">{p.name}</h2>
             <p className="mt-2 text-muted-foreground">{p.description}</p>
+            <p className="mt-3 max-w-xl text-sm text-muted-foreground">{setup[p.id]}</p>
           </div>
-          <span className="text-sm text-muted-foreground">Not connected →</span>
+          <span className="text-sm text-muted-foreground">{p.id === "resy" ? "Approval required" : "Setup →"}</span>
         </Link>
       ))}
     </div>
