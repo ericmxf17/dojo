@@ -4,6 +4,18 @@ A working single-restaurant backend for a daily operations briefing. CSV imports
 feed a persistent SQLite database; calculations and alerts point back to imported
 records. The included restaurant and employee data are synthetic.
 
+## Hosted deployment
+
+The repository includes `render.yaml` and `backend/Dockerfile` for a persistent
+FastAPI deployment. The attached disk stores `SIDEWORK_DB=/data/sidework.db`, so
+imports, documents, payroll drafts, orders, and provider attribution survive
+application restarts. Provider secrets belong in the host's secret settings and
+must never be exposed through frontend environment variables.
+
+After deployment, configure the Vercel project with `SIDEWORK_BACKEND_URL`, the
+same `SIDEWORK_API_KEY`, and optionally `VITE_SIDEWORK_DEFAULT_MODE=live`, then
+redeploy the frontend.
+
 ## Run locally
 
 From this directory:

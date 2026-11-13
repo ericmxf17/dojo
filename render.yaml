@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: sidework-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: SIDEWORK_DB
+        value: /data/sidework.db
+      - key: SIDEWORK_TIMEZONE
+        value: America/New_York
+      - key: SIDEWORK_CORS_ORIGINS
+        value: https://side-work-six.vercel.app
+      - key: SIDEWORK_API_KEY
+        generateValue: true
+      - key: TOAST_CLIENT_ID
+        sync: false
+      - key: TOAST_CLIENT_SECRET
+        sync: false
+      - key: TOAST_RESTAURANT_GUID
+        sync: false
+      - key: SEVENSHIFTS_ACCESS_TOKEN
+        sync: false
+      - key: SEVENSHIFTS_COMPANY_ID
+        sync: false
+      - key: MARKETMAN_API_KEY
+        sync: false
+      - key: MARKETMAN_API_PASSWORD
+        sync: false
+      - key: RESTAURANT365_API_TOKEN
+        sync: false
+    disk:
+      name: sidework-data
+      mountPath: /data
+      sizeGB: 1
