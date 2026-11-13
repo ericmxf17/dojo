@@ -2,13 +2,14 @@ services:
   - type: web
     name: sidework-api
     runtime: docker
+    plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: SIDEWORK_DB
-        value: /data/sidework.db
+        value: /tmp/sidework.db
       - key: SIDEWORK_TIMEZONE
         value: America/New_York
       - key: SIDEWORK_CORS_ORIGINS
@@ -31,7 +32,3 @@ services:
         sync: false
       - key: RESTAURANT365_API_TOKEN
         sync: false
-    disk:
-      name: sidework-data
-      mountPath: /data
-      sizeGB: 1

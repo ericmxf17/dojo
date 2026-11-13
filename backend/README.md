@@ -6,11 +6,12 @@ records. The included restaurant and employee data are synthetic.
 
 ## Hosted deployment
 
-The repository includes `render.yaml` and `backend/Dockerfile` for a persistent
-FastAPI deployment. The attached disk stores `SIDEWORK_DB=/data/sidework.db`, so
-imports, documents, payroll drafts, orders, and provider attribution survive
-application restarts. Provider secrets belong in the host's secret settings and
-must never be exposed through frontend environment variables.
+The repository includes `render.yaml` and `backend/Dockerfile` for a free MVP
+FastAPI deployment. It uses `SIDEWORK_DB=/tmp/sidework.db`, so imported data may
+reset during restarts or redeploys. Before production use, move the database to
+managed persistent storage or attach a paid disk and set `SIDEWORK_DB` to its
+mount path. Provider secrets belong in the host's secret settings and must never
+be exposed through frontend environment variables.
 
 After deployment, configure the Vercel project with `SIDEWORK_BACKEND_URL`, the
 same `SIDEWORK_API_KEY`, and optionally `VITE_SIDEWORK_DEFAULT_MODE=live`, then
