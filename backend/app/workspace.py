@@ -258,6 +258,17 @@ def register_workspace(app, db, records, source, preview):
     def providers():
         return {'providers': [dict(id=key, **v, **provider_connection(key), ingestion='mapped_csv') for key, v in PROVIDERS.items()]}
 
+    @router.get('/integrations/onboarding', tags=['Provider workspaces'])
+    def integrations_onboarding():
+        steps = {
+            'toast': ['Restaurant admin enables Standard API access in Toast Web', 'Grant read scopes for orders, labor, employees, and stock', 'Store client ID, client secret, and restaurant GUID on the Sidework backend'],
+            '7shifts': ['Company admin opens Settings > Developer Tools', 'Create a company access token and copy the company ID', 'Store both values on the Sidework backend'],
+            'marketman': ['Ask the MarketMan account manager for API Partner credentials', 'Confirm buyer/vendor GUIDs and permitted scopes', 'Store the partner key and password on the Sidework backend'],
+            'restaurant365': ['Request approved API or Secure Data Share access from Restaurant365', 'Receive the tenant credential through the vendor’s secure process', 'Store the token or warehouse credentials on the Sidework backend'],
+            'resy': ['Contact Resy/Amex for an approved commercial integration path', 'Do not automate against private booking endpoints', 'Use manual exports until approved access exists'],
+        }
+        return {'providers': [dict(id=key, name=(PROVIDERS[key]['name'] if key in PROVIDERS else 'Resy'), **provider_connection(key) if key in PROVIDERS else {'status': 'not_connected', 'connection_status': 'approval_required', 'live_sync': False, 'missing_environment': []}, steps=steps[key]) for key in steps]}
+
     @router.get('/providers/{provider}', tags=['Provider workspaces'])
     def provider_workspace(provider: str, on: date):
         if provider not in PROVIDERS:
