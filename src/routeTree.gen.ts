@@ -19,6 +19,7 @@ import { Route as ImportsRouteImport } from './routes/imports'
 import { Route as PantryRouteImport } from './routes/pantry'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as RecordsRouteImport } from './routes/records'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ProvidersProviderRouteImport } from './routes/providers.$provider'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +72,11 @@ const RecordsRoute = RecordsRouteImport.update({
   path: '/records',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProvidersProviderRoute = ProvidersProviderRouteImport.update({
   id: '/providers/$provider',
   path: '/providers/$provider',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/pantry': typeof PantryRoute
   '/payroll': typeof PayrollRoute
   '/records': typeof RecordsRoute
+  '/setup': typeof SetupRoute
   '/providers/$provider': typeof ProvidersProviderRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/pantry': typeof PantryRoute
   '/payroll': typeof PayrollRoute
   '/records': typeof RecordsRoute
+  '/setup': typeof SetupRoute
   '/providers/$provider': typeof ProvidersProviderRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/pantry': typeof PantryRoute
   '/payroll': typeof PayrollRoute
   '/records': typeof RecordsRoute
+  '/setup': typeof SetupRoute
   '/providers/$provider': typeof ProvidersProviderRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/pantry'
     | '/payroll'
     | '/records'
+    | '/setup'
     | '/providers/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/pantry'
     | '/payroll'
     | '/records'
+    | '/setup'
     | '/providers/$provider'
   id:
     | '__root__'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/pantry'
     | '/payroll'
     | '/records'
+    | '/setup'
     | '/providers/$provider'
   fileRoutesById: FileRoutesById
 }
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   PantryRoute: typeof PantryRoute
   PayrollRoute: typeof PayrollRoute
   RecordsRoute: typeof RecordsRoute
+  SetupRoute: typeof SetupRoute
   ProvidersProviderRoute: typeof ProvidersProviderRoute
 }
 
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecordsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/providers/$provider': {
       id: '/providers/$provider'
       path: '/providers/$provider'
@@ -266,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   PantryRoute: PantryRoute,
   PayrollRoute: PayrollRoute,
   RecordsRoute: RecordsRoute,
+  SetupRoute: SetupRoute,
   ProvidersProviderRoute: ProvidersProviderRoute,
 }
 export const routeTree = rootRouteImport

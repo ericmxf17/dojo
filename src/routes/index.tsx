@@ -119,7 +119,7 @@ function Homepage() {
             <a href="#platform">Explore the platform</a>
           </Button>
           <Button asChild className="h-11 px-5">
-            <Link to="/dashboard">
+            <Link to="/setup">
               Open demo <ArrowUpRightIcon />
             </Link>
           </Button>
@@ -145,7 +145,7 @@ function Homepage() {
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <Button asChild size="lg" className="h-12 px-7 text-base">
-                <Link to="/dashboard">
+                <Link to="/setup">
                   Open the demo <ArrowRight />
                 </Link>
               </Button>
@@ -230,7 +230,7 @@ function Homepage() {
               A little less side work. A little more perspective.
             </p>
             <Button asChild className="mt-8 h-12 px-7 text-base">
-              <Link to="/dashboard">
+              <Link to="/setup">
                 Step inside the demo <ArrowRight />
               </Link>
             </Button>
@@ -240,7 +240,7 @@ function Homepage() {
       <footer className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-5 px-6 py-8 md:px-10">
         <HomeLogo />
         <p className="text-sm text-muted-foreground">© 2026 sidework</p>
-        <Link to="/dashboard" className="text-sm">
+        <Link to="/setup" className="text-sm">
           Open the demo ↗
         </Link>
       </footer>

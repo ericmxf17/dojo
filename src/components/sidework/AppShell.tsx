@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { useSideWork, useHealth } from "@/lib/sidework/context";
 import { PROVIDERS } from "@/lib/sidework/workspace-types";
 import { HomeLogo } from "./brand";
+import { useFeatures, type FeatureId } from "@/lib/sidework/features";
 import { SourcesDrawer } from "./SourcesDrawer";
 const operations = [
   { to: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
@@ -37,6 +38,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { date, setDate, mode, setMode, baseUrl, setBaseUrl } = useSideWork();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const health = useHealth();
+  const { has } = useFeatures();
+  const show = (to: string) => to === "/dashboard" || has(to.slice(1) as FeatureId);
   const [menu, setMenu] = useState(false);
   const [settings, setSettings] = useState(false);
   const [url, setUrl] = useState(baseUrl);
@@ -57,7 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           { items: data, label: "DATA" },
         ].map(({ items, label }, i) => (
           <div key={String(label)}>
-            {i === 1 && (
+            {i === 1 && has("tools") && (
               <div className="mb-6">
                 <p className="mb-2 px-3 text-xs font-medium text-muted-foreground">TOOLS</p>
                 {PROVIDERS.map((p) => (
@@ -78,21 +81,28 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
             <p className="mb-2 px-3 text-xs font-medium text-muted-foreground">{String(label)}</p>
             <div className="mb-6">
-              {items.map((n) => (
-                <Link
-                  key={n.to}
-                  to={n.to}
-                  onClick={() => setMenu(false)}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${path === n.to ? "bg-primary font-medium text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-                >
-                  <n.Icon className="size-[18px]" />
-                  {n.label}
-                </Link>
-              ))}
+              {items
+                .filter((n) => show(n.to))
+                .map((n) => (
+                  <Link
+                    key={n.to}
+                    to={n.to}
+                    onClick={() => setMenu(false)}
+                    className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${path === n.to ? "bg-primary font-medium text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+                  >
+                    <n.Icon className="size-[18px]" />
+                    {n.label}
+                  </Link>
+                ))}
             </div>
           </div>
         ))}
       </nav>
+      <Button asChild variant="ghost" className="justify-start text-muted-foreground">
+        <Link to="/setup" onClick={() => setMenu(false)}>
+          <Settings2 /> Customize dashboard
+        </Link>
+      </Button>
       <Button
         variant="outline"
         onClick={() => {

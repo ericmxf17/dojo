@@ -1,3 +1,4 @@
+import { useFeatures, saveFeatures, type FeatureId } from "@/lib/sidework/features";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowUpRight,
@@ -6,6 +7,7 @@ import {
   TriangleAlert,
   FileText,
   CalendarDays,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBriefing } from "@/lib/sidework/context";
@@ -13,6 +15,7 @@ import { formatCents, formatDate } from "@/lib/sidework/format";
 import { useWorkspace, useWorkspaceQuery } from "./workspace-hooks";
 import { ErrorState, LoadingBlock } from "./states";
 export function Dashboard() {
+  const { has, features } = useFeatures();
   const { workspace, date, openSources } = useWorkspace();
   const summary = useWorkspaceQuery(["service", date], () => workspace.serviceSummary(date));
   const briefing = useBriefing();
@@ -31,6 +34,7 @@ export function Dashboard() {
   const metrics = [
     {
       label: "Total net sales",
+      feature: "sales",
       value:
         s?.net_sales_cents == null ? "Missing" : formatCents(s.net_sales_cents, { whole: true }),
       sources: s?.sales_sources ?? [],
@@ -44,6 +48,7 @@ export function Dashboard() {
       value: s?.total_hours ?? "Missing",
       sources: s?.labor_sources ?? [],
       note: "Imported labor hours",
+      feature: "hours",
     },
     {
       label: "Estimated base wages",
@@ -57,14 +62,16 @@ export function Dashboard() {
           ? formatCents(b.changes_vs_previous_day.estimated_wages.amount_cents) +
             " change vs previous service"
           : "Imported hours × hourly rates",
+      feature: "wages",
     },
     {
       label: "Wage-to-sales ratio",
       value: ratio === null ? "Missing" : ratio.toFixed(2) + "%",
       sources: [...(s?.sales_sources ?? []), ...(s?.labor_sources ?? [])],
       note: "Base wages ÷ net sales",
+      feature: "ratio",
     },
-  ];
+  ].filter((m) => has(m.feature as FeatureId));
   return (
     <div>
       <div className="mb-9 flex flex-wrap items-end justify-between gap-5">
@@ -76,21 +83,36 @@ export function Dashboard() {
             {b?.previous_day && <span> · Previous service: {formatDate(b.previous_day.date)}</span>}
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link to="/records">
-            View records <ArrowUpRight />
-          </Link>
-        </Button>
+        {has("records") && (
+          <Button asChild variant="outline">
+            <Link to="/records">
+              View records <ArrowUpRight />
+            </Link>
+          </Button>
+        )}
       </div>
       {summary.isLoading && <LoadingBlock />}
       {summary.error && <ErrorState error={summary.error} onRetry={() => summary.refetch()} />}{" "}
-      {s && (
+      {s && metrics.length > 0 && (
         <section
           aria-label="Service figures"
+          style={
+            metrics.length < 4
+              ? { gridTemplateColumns: `repeat(${metrics.length},minmax(0,1fr))` }
+              : undefined
+          }
           className="workspace-grid divide-x divide-border overflow-hidden rounded-md border border-border bg-card"
         >
           {metrics.map((m) => (
-            <div className="flex min-h-[200px] flex-col p-6" key={m.label}>
+            <div className="group relative flex min-h-[200px] flex-col p-6" key={m.label}>
+              <button
+                type="button"
+                aria-label={`Hide ${m.label}`}
+                onClick={() => saveFeatures(features.filter((f) => f !== m.feature))}
+                className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground opacity-60 hover:bg-muted hover:opacity-100"
+              >
+                <X className="size-4" />
+              </button>
               <p className="text-sm text-muted-foreground">{m.label}</p>
               <p className="metric-number mt-5">{m.value}</p>
               <p className="mt-3 text-xs text-muted-foreground">{m.note}</p>
@@ -106,153 +128,185 @@ export function Dashboard() {
           ))}
         </section>
       )}
+      {[
+        "sales",
+        "hours",
+        "wages",
+        "ratio",
+        "alerts",
+        "comparison",
+        "calendar",
+        "documents",
+        "coverage",
+      ].some((f) => !has(f as FeatureId)) && (
+        <p className="mt-10 text-muted-foreground">
+          Some dashboard items are hidden.{" "}
+          <Link to="/setup" className="text-primary underline">
+            Add more features
+          </Link>
+        </p>
+      )}
       <div className="mt-10 grid gap-9 lg:grid-cols-[1.5fr_1fr]">
         <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-medium">Needs attention</h2>
-            <span className="text-sm text-muted-foreground">{b?.alerts.length ?? 0} items</span>
-          </div>
-          {briefing.error && (
-            <ErrorState error={briefing.error} onRetry={() => briefing.refetch()} />
+          {has("alerts") && (
+            <>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-2xl font-medium">Needs attention</h2>
+                <span className="text-sm text-muted-foreground">{b?.alerts.length ?? 0} items</span>
+              </div>
+              {briefing.error && (
+                <ErrorState error={briefing.error} onRetry={() => briefing.refetch()} />
+              )}
+              <div className="divide-y divide-border border-y border-border">
+                {b?.alerts.map((a) => (
+                  <div key={a.id} className="flex gap-4 py-5">
+                    <TriangleAlert className="mt-1 size-5 shrink-0 text-warning" />
+                    <div className="flex-1">
+                      <h3 className="font-medium">{a.title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        {a.message}
+                      </p>
+                      <Button
+                        variant="link"
+                        className="mt-2 h-auto p-0 text-sm"
+                        onClick={() => openSources(a.title, a.sources)}
+                      >
+                        View sources <ArrowRight />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {b && b.alerts.length === 0 && (
+                  <p className="py-6 text-muted-foreground">
+                    No configured alerts for the available records.
+                  </p>
+                )}
+              </div>
+            </>
           )}
-          <div className="divide-y divide-border border-y border-border">
-            {b?.alerts.map((a) => (
-              <div key={a.id} className="flex gap-4 py-5">
-                <TriangleAlert className="mt-1 size-5 shrink-0 text-warning" />
-                <div className="flex-1">
-                  <h3 className="font-medium">{a.title}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{a.message}</p>
+          {has("comparison") && (
+            <div className="mt-8">
+              <h2 className="mb-4 text-2xl font-medium">Service comparison</h2>
+              {b?.previous_day ? (
+                <div className="border-y border-border py-6">
+                  <div className="mb-5 flex justify-between text-sm">
+                    <span>Net sales</span>
+                    <span>
+                      {formatCents(b.metrics.net_sales.amount_cents)} /{" "}
+                      {formatCents(b.previous_day.metrics.net_sales.amount_cents)}
+                    </span>
+                  </div>
+                  <div className="h-3 w-full overflow-hidden rounded-sm bg-muted">
+                    <div className="h-full w-full bg-primary" />
+                  </div>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {formatDate(date)} compared with {formatDate(b.previous_day.date)}. Recorded
+                    purchases: {formatCents(b.metrics.recorded_purchases.amount_cents)}.
+                  </p>
                   <Button
                     variant="link"
-                    className="mt-2 h-auto p-0 text-sm"
-                    onClick={() => openSources(a.title, a.sources)}
+                    className="mt-2 h-auto p-0"
+                    onClick={() =>
+                      openSources("Recorded purchases", b.metrics.recorded_purchases.sources)
+                    }
                   >
-                    View sources <ArrowRight />
+                    Purchase sources <ArrowUpRight />
                   </Button>
                 </div>
-              </div>
-            ))}
-            {b && b.alerts.length === 0 && (
-              <p className="py-6 text-muted-foreground">
-                No configured alerts for the available records.
-              </p>
-            )}
-          </div>
-          <div className="mt-8">
-            <h2 className="mb-4 text-2xl font-medium">Service comparison</h2>
-            {b?.previous_day ? (
-              <div className="border-y border-border py-6">
-                <div className="mb-5 flex justify-between text-sm">
-                  <span>Net sales</span>
-                  <span>
-                    {formatCents(b.metrics.net_sales.amount_cents)} /{" "}
-                    {formatCents(b.previous_day.metrics.net_sales.amount_cents)}
-                  </span>
-                </div>
-                <div className="h-3 w-full overflow-hidden rounded-sm bg-muted">
-                  <div className="h-full w-full bg-primary" />
-                </div>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  {formatDate(date)} compared with {formatDate(b.previous_day.date)}. Recorded
-                  purchases: {formatCents(b.metrics.recorded_purchases.amount_cents)}.
-                </p>
-                <Button
-                  variant="link"
-                  className="mt-2 h-auto p-0"
-                  onClick={() =>
-                    openSources("Recorded purchases", b.metrics.recorded_purchases.sources)
-                  }
-                >
-                  Purchase sources <ArrowUpRight />
-                </Button>
-              </div>
-            ) : (
-              <p className="text-muted-foreground">Previous service records are unavailable.</p>
-            )}
-          </div>
-        </section>
-        <div>
-          <section>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-2xl font-medium">Coming up</h2>
-              <Button variant="link" asChild className="p-0">
-                <Link to="/calendar">
-                  <ArrowUpRight />
-                  <span className="sr-only">Open calendar</span>
-                </Link>
-              </Button>
-            </div>
-            {events.error && <ErrorState error={events.error} />}
-            <div className="divide-y divide-border border-y border-border">
-              {events.data?.slice(0, 4).map((e) => (
-                <Link key={e.id} to="/calendar" className="flex items-center gap-4 py-4">
-                  <CalendarDays className="size-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">{e.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {formatDate(e.date)} · {e.kind.replace(/_/g, " ")}
-                    </p>
-                  </div>
-                  <ArrowUpRight className="ml-auto size-4 text-muted-foreground" />
-                </Link>
-              ))}
-              {events.data?.length === 0 && (
-                <p className="py-5 text-muted-foreground">
-                  Nothing scheduled in the next two weeks.
-                </p>
+              ) : (
+                <p className="text-muted-foreground">Previous service records are unavailable.</p>
               )}
             </div>
-          </section>
-          <section className="mt-8">
-            <h2 className="mb-4 text-2xl font-medium">Document deadlines</h2>
-            {docs.error && <ErrorState error={docs.error} />}
-            <div className="divide-y divide-border">
-              {docs.data
-                ?.filter((d) => d.status === "active" && d.deadline)
-                .sort((a, b) => (a.deadline ?? "").localeCompare(b.deadline ?? ""))
-                .slice(0, 3)
-                .map((d) => (
-                  <Link
-                    key={d.id}
-                    to="/documents"
-                    className="flex gap-3 border-b border-border py-4"
-                  >
-                    <FileText className="size-5 text-primary" />
+          )}
+        </section>
+        <div>
+          {has("calendar") && (
+            <section>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-2xl font-medium">Coming up</h2>
+                <Button variant="link" asChild className="p-0">
+                  <Link to="/calendar">
+                    <ArrowUpRight />
+                    <span className="sr-only">Open calendar</span>
+                  </Link>
+                </Button>
+              </div>
+              {events.error && <ErrorState error={events.error} />}
+              <div className="divide-y divide-border border-y border-border">
+                {events.data?.slice(0, 4).map((e) => (
+                  <Link key={e.id} to="/calendar" className="flex items-center gap-4 py-4">
+                    <CalendarDays className="size-5 text-primary" />
                     <div>
-                      <p className="text-sm font-medium">{d.title}</p>
+                      <p className="text-sm font-medium">{e.title}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {formatDate(d.deadline)}
-                        {d.deadline && d.deadline < date ? " · Overdue" : ""}
+                        {formatDate(e.date)} · {e.kind.replace(/_/g, " ")}
                       </p>
                     </div>
+                    <ArrowUpRight className="ml-auto size-4 text-muted-foreground" />
                   </Link>
                 ))}
-            </div>
-          </section>
-          <section className="mt-8">
-            <h2 className="mb-4 text-2xl font-medium">Data coverage</h2>
-            {["sales", "labor", "purchases", "inventory"].map((k) => (
-              <div
-                key={k}
-                className="flex items-center justify-between border-b border-border py-3 text-sm"
-              >
-                <span className="capitalize">{k === "labor" ? "Employee hours" : k}</span>
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  {b && !b.missing_data.includes(k) ? (
-                    <>
-                      <Check className="size-4 text-primary" />
-                      Available
-                    </>
-                  ) : (
-                    "Missing"
-                  )}
-                </span>
+                {events.data?.length === 0 && (
+                  <p className="py-5 text-muted-foreground">
+                    Nothing scheduled in the next two weeks.
+                  </p>
+                )}
               </div>
-            ))}
-            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-              Imported business-date records do not establish complete service coverage.
-            </p>
-          </section>
+            </section>
+          )}
+          {has("documents") && (
+            <section className="mt-8">
+              <h2 className="mb-4 text-2xl font-medium">Document deadlines</h2>
+              {docs.error && <ErrorState error={docs.error} />}
+              <div className="divide-y divide-border">
+                {docs.data
+                  ?.filter((d) => d.status === "active" && d.deadline)
+                  .sort((a, b) => (a.deadline ?? "").localeCompare(b.deadline ?? ""))
+                  .slice(0, 3)
+                  .map((d) => (
+                    <Link
+                      key={d.id}
+                      to="/documents"
+                      className="flex gap-3 border-b border-border py-4"
+                    >
+                      <FileText className="size-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">{d.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {formatDate(d.deadline)}
+                          {d.deadline && d.deadline < date ? " · Overdue" : ""}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+              </div>
+            </section>
+          )}
+          {has("coverage") && (
+            <section className="mt-8">
+              <h2 className="mb-4 text-2xl font-medium">Data coverage</h2>
+              {["sales", "labor", "purchases", "inventory"].map((k) => (
+                <div
+                  key={k}
+                  className="flex items-center justify-between border-b border-border py-3 text-sm"
+                >
+                  <span className="capitalize">{k === "labor" ? "Employee hours" : k}</span>
+                  <span className="flex items-center gap-2 text-muted-foreground">
+                    {b && !b.missing_data.includes(k) ? (
+                      <>
+                        <Check className="size-4 text-primary" />
+                        Available
+                      </>
+                    ) : (
+                      "Missing"
+                    )}
+                  </span>
+                </div>
+              ))}
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                Imported business-date records do not establish complete service coverage.
+              </p>
+            </section>
+          )}
         </div>
       </div>
     </div>

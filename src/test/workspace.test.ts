@@ -9,6 +9,7 @@ import {
   transitions,
 } from "@/lib/sidework/workspace-api";
 import { PROVIDERS } from "@/lib/sidework/workspace-types";
+import { ALL_FEATURES, parseFeatures } from "@/lib/sidework/features";
 describe("Owner workspace rules", () => {
   beforeEach(() => localStorage.removeItem("sidework.workspace.v1"));
   it("preserves Nov 9 service totals", async () => {
@@ -128,5 +129,18 @@ describe("Calendar recurrence matches the backend", () => {
         "2028-12-31",
       ),
     ).toEqual(["2024-02-29", "2028-02-29"]);
+  });
+});
+
+describe("Workspace feature selection", () => {
+  it("defaults to every feature for existing users", () => {
+    expect(parseFeatures(null)).toEqual(ALL_FEATURES);
+  });
+
+  it("keeps supported selections and drops unknown values", () => {
+    expect(parseFeatures(JSON.stringify(["sales", "tools", "unknown"]))).toEqual([
+      "tools",
+      "sales",
+    ]);
   });
 });
