@@ -15,7 +15,7 @@ import os
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from .integrations import seven_shifts_time_punches
+from .integrations import normalize_7shifts_punch, seven_shifts_time_punches
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS workspace_resources (
@@ -295,7 +295,8 @@ def register_workspace(app, db, records, source, preview):
             raise HTTPException(422, 'Date range must be 0-31 days and end must be on or after start')
         rows = seven_shifts_time_punches(start, end)
         return {'provider': '7shifts', 'start': str(start), 'end': str(end), 'count': len(rows),
-                'records': rows, 'note': 'Raw read-only 7shifts records. They are not committed to Sidework until mapping is reviewed.'}
+                'records': rows, 'normalized_preview': [normalize_7shifts_punch(row) for row in rows],
+                'note': 'Read-only records with a review mapping. They are not committed to Sidework until rate and identity mapping is reviewed.'}
 
     @router.get('/payroll/preview', tags=['Payroll preparation'])
     def payroll_preview(start: date, end: date):

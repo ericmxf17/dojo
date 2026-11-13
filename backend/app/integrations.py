@@ -1,6 +1,7 @@
 """Small, server-only vendor clients. Credentials are never returned to callers."""
 import json
 import os
+from datetime import datetime
 from datetime import date
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -50,3 +51,35 @@ def seven_shifts_time_punches(start: date, end: date):
         if len(rows) > 10000:
             raise HTTPException(502, '7shifts response exceeded the safe 10,000-row limit')
     return rows
+
+
+def normalize_7shifts_punch(row: dict):
+    """Map common 7shifts time-punch shapes into a reviewable Sidework labor candidate."""
+    employee = row.get('employee_name') or row.get('employee') or row.get('user_name') or str(row.get('employee_id', ''))
+    punch_id = row.get('id') or row.get('time_punch_id')
+    start = row.get('clock_in') or row.get('start') or row.get('start_time')
+    end = row.get('clock_out') or row.get('end') or row.get('end_time')
+    hours = row.get('hours') or row.get('regular_hours')
+    warnings = []
+    if not punch_id:
+        warnings.append('missing punch id')
+    if not employee:
+        warnings.append('missing employee identifier')
+    if hours is None and start and end:
+        try:
+            parse = lambda value: datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+            hours = round((parse(end) - parse(start)).total_seconds() / 3600, 4)
+        except (TypeError, ValueError):
+            warnings.append('could not calculate hours from clock-in/clock-out')
+    if hours is None:
+        warnings.append('missing hours')
+    business_date = str(row.get('date') or (start or '')[:10])
+    return {
+        'external_id': f'7shifts:{punch_id}' if punch_id else None,
+        'date': business_date,
+        'employee': employee or None,
+        'hours': str(hours) if hours is not None else None,
+        'hourly_rate': None,
+        'warnings': warnings + (['hourly rate is not supplied by this preview'] if row.get('hourly_rate') is None else []),
+        'source': '7shifts',
+    }
