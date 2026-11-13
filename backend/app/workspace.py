@@ -48,6 +48,24 @@ PROVIDERS = {
  'restaurant365': {'name': 'Restaurant365', 'description': 'Accounting & operational data', 'kinds': ['sales', 'labor', 'purchases', 'inventory']},
 }
 
+PROVIDER_ENV = {
+ 'toast': ('TOAST_CLIENT_ID', 'TOAST_CLIENT_SECRET', 'TOAST_RESTAURANT_GUID'),
+ '7shifts': ('SEVENSHIFTS_ACCESS_TOKEN', 'SEVENSHIFTS_COMPANY_ID'),
+ 'marketman': ('MARKETMAN_API_KEY', 'MARKETMAN_API_PASSWORD'),
+ 'restaurant365': ('RESTAURANT365_API_TOKEN',),
+}
+
+def provider_connection(provider: str):
+    required = PROVIDER_ENV.get(provider, ())
+    configured = bool(required) and all(os.getenv(key) for key in required)
+    return {
+        'status': 'connected' if configured else 'not_connected',
+        'connection_status': 'configured' if configured else 'not_configured',
+        'live_sync': False,
+        'missing_environment': [] if configured else [key for key in required if not os.getenv(key)],
+        'credential_storage': 'server_environment_only',
+    }
+
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
 
@@ -237,7 +255,7 @@ def register_workspace(app, db, records, source, preview):
 
     @router.get('/providers', tags=['Provider workspaces'])
     def providers():
-        return {'providers': [dict(id=key, **v, status='not_connected', live_sync=False, ingestion='mapped_csv') for key, v in PROVIDERS.items()]}
+        return {'providers': [dict(id=key, **v, **provider_connection(key), ingestion='mapped_csv') for key, v in PROVIDERS.items()]}
 
     @router.get('/providers/{provider}', tags=['Provider workspaces'])
     def provider_workspace(provider: str, on: date):
@@ -246,7 +264,7 @@ def register_workspace(app, db, records, source, preview):
         with db() as conn:
             ids = {r['import_id'] for r in conn.execute('SELECT import_id FROM provider_imports WHERE provider=?', (provider,))}
             rows = [r for r in records(conn, through=on) if r['import_id'] in ids and r['business_date'] == str(on)]
-            return {'provider': provider, **PROVIDERS[provider], 'status': 'not_connected', 'live_sync': False, 'date': str(on),
+            return {'provider': provider, **PROVIDERS[provider], **provider_connection(provider), 'date': str(on),
                     'import_count': len(ids), 'records': [{'kind': r['kind'], 'data': r['data'], 'source': source(r)} for r in rows],
                     'note': 'These are explicitly uploaded, mapped CSV records, not data fetched from the vendor API.'}
 
