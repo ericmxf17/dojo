@@ -38,6 +38,26 @@ def toast_test_credentials():
     return {'restaurant_guid': os.environ['TOAST_RESTAURANT_GUID'], 'auth_url': auth_url, 'authenticated': True}
 
 
+def marketman_test_credentials():
+    required = ('MARKETMAN_API_KEY', 'MARKETMAN_API_PASSWORD')
+    missing = [key for key in required if not os.getenv(key)]
+    if missing:
+        raise HTTPException(503, f'MarketMan is not configured. Missing backend variables: {", ".join(missing)}')
+    auth_url = os.getenv('MARKETMAN_AUTH_URL', 'https://api.marketman.com/v3/buyers/auth/GetToken')
+    payload = json.dumps({'APIKey': os.environ['MARKETMAN_API_KEY'], 'APIPassword': os.environ['MARKETMAN_API_PASSWORD']}).encode()
+    req = Request(auth_url, data=payload, method='POST', headers={'Content-Type': 'application/json', 'Accept': 'application/json'})
+    try:
+        with urlopen(req, timeout=20) as response:
+            body = json.loads(response.read().decode('utf-8'))
+    except HTTPError as exc:
+        raise HTTPException(502, f'MarketMan authentication returned HTTP {exc.code}') from exc
+    except (URLError, TimeoutError, ValueError) as exc:
+        raise HTTPException(502, 'MarketMan authentication could not be reached or returned invalid JSON') from exc
+    if not any(body.get(key) for key in ('accessToken', 'AccessToken', 'Token', 'token')):
+        raise HTTPException(502, 'MarketMan authentication did not return an access token')
+    return {'auth_url': auth_url, 'authenticated': True}
+
+
 def seven_shifts_get(path: str, params: dict[str, str] | None = None):
     if not seven_shifts_configured():
         raise HTTPException(503, '7shifts is not configured. Set SEVENSHIFTS_ACCESS_TOKEN and SEVENSHIFTS_COMPANY_ID on the backend.')

@@ -15,7 +15,7 @@ import os
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from .integrations import normalize_7shifts_punch, seven_shifts_time_punches, seven_shifts_whoami, toast_test_credentials
+from .integrations import marketman_test_credentials, normalize_7shifts_punch, seven_shifts_time_punches, seven_shifts_whoami, toast_test_credentials
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS workspace_resources (
@@ -319,6 +319,12 @@ def register_workspace(app, db, records, source, preview):
     def toast_test_connection():
         result = toast_test_credentials()
         return {'provider': 'toast', 'connected': True, **result,
+                'note': 'Credentials verified. No restaurant data was imported.'}
+
+    @router.post('/providers/marketman/test-connection', tags=['Provider workspaces'])
+    def marketman_test_connection():
+        result = marketman_test_credentials()
+        return {'provider': 'marketman', 'connected': True, **result,
                 'note': 'Credentials verified. No restaurant data was imported.'}
 
     @router.get('/payroll/preview', tags=['Payroll preparation'])
