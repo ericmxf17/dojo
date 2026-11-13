@@ -531,6 +531,16 @@ export function createWorkspaceApi(api: SideWorkApi, baseUrl: string): Workspace
       save(s);
       return p;
     },
+    async testProvider(id) {
+      if (api.mode !== "live")
+        throw new ApiError("Switch to live backend mode before testing credentials.", 409);
+      if (!["toast", "7shifts", "marketman"].includes(id))
+        throw new ApiError("This provider does not support self-service connection testing.", 409);
+      return live<{ connected: boolean; note: string }>(
+        `/api/providers/${id}/test-connection`,
+        {},
+      );
+    },
   };
 }
 export function downloadFile(blob: Blob, name: string) {

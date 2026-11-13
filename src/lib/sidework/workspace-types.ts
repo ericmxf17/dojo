@@ -137,4 +137,5 @@ export interface WorkspaceApi {
   ): Promise<{ created_order_ids: string[]; existing_order_ids: string[] }>;
   provider(id: string, on: string): Promise<StoredRecord[]>;
   providerImport(id: string, kind: RecordKind, file: File): Promise<ImportPreview>;
+  testProvider(id: string): Promise<{ connected: boolean; note: string }>;
 }
