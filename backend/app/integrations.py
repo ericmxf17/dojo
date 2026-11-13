@@ -14,6 +14,30 @@ def seven_shifts_configured() -> bool:
     return bool(os.getenv('SEVENSHIFTS_ACCESS_TOKEN') and os.getenv('SEVENSHIFTS_COMPANY_ID'))
 
 
+def toast_test_credentials():
+    required = ('TOAST_CLIENT_ID', 'TOAST_CLIENT_SECRET', 'TOAST_RESTAURANT_GUID')
+    missing = [key for key in required if not os.getenv(key)]
+    if missing:
+        raise HTTPException(503, f'Toast is not configured. Missing backend variables: {", ".join(missing)}')
+    auth_url = os.getenv('TOAST_AUTH_URL', 'https://ws-api.toasttab.com/authentication/v1/authentication/login')
+    payload = json.dumps({
+        'clientId': os.environ['TOAST_CLIENT_ID'],
+        'clientSecret': os.environ['TOAST_CLIENT_SECRET'],
+        'userAccessType': os.getenv('TOAST_USER_ACCESS_TYPE', 'TOAST_MACHINE_CLIENT'),
+    }).encode()
+    req = Request(auth_url, data=payload, method='POST', headers={'Content-Type': 'application/json', 'Accept': 'application/json'})
+    try:
+        with urlopen(req, timeout=20) as response:
+            body = json.loads(response.read().decode('utf-8'))
+    except HTTPError as exc:
+        raise HTTPException(502, f'Toast authentication returned HTTP {exc.code}') from exc
+    except (URLError, TimeoutError, ValueError) as exc:
+        raise HTTPException(502, 'Toast authentication could not be reached or returned invalid JSON') from exc
+    if not body.get('accessToken'):
+        raise HTTPException(502, 'Toast authentication did not return an access token')
+    return {'restaurant_guid': os.environ['TOAST_RESTAURANT_GUID'], 'auth_url': auth_url, 'authenticated': True}
+
+
 def seven_shifts_get(path: str, params: dict[str, str] | None = None):
     if not seven_shifts_configured():
         raise HTTPException(503, '7shifts is not configured. Set SEVENSHIFTS_ACCESS_TOKEN and SEVENSHIFTS_COMPANY_ID on the backend.')
