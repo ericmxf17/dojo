@@ -15,7 +15,7 @@ import os
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from .integrations import normalize_7shifts_punch, seven_shifts_time_punches
+from .integrations import normalize_7shifts_punch, seven_shifts_time_punches, seven_shifts_whoami
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS workspace_resources (
@@ -308,6 +308,12 @@ def register_workspace(app, db, records, source, preview):
         return {'provider': '7shifts', 'start': str(start), 'end': str(end), 'count': len(rows),
                 'records': rows, 'normalized_preview': [normalize_7shifts_punch(row) for row in rows],
                 'note': 'Read-only records with a review mapping. They are not committed to Sidework until rate and identity mapping is reviewed.'}
+
+    @router.post('/providers/7shifts/test-connection', tags=['Provider workspaces'])
+    def seven_shifts_test_connection():
+        identity = seven_shifts_whoami()
+        return {'provider': '7shifts', 'connected': True, 'account': identity,
+                'note': 'Connection verified. No restaurant data was imported.'}
 
     @router.get('/payroll/preview', tags=['Payroll preparation'])
     def payroll_preview(start: date, end: date):

@@ -53,6 +53,10 @@ def seven_shifts_time_punches(start: date, end: date):
     return rows
 
 
+def seven_shifts_whoami():
+    return seven_shifts_get('whoami')
+
+
 def normalize_7shifts_punch(row: dict):
     """Map common 7shifts time-punch shapes into a reviewable Sidework labor candidate."""
     employee = row.get('employee_name') or row.get('employee') or row.get('user_name') or str(row.get('employee_id', ''))
