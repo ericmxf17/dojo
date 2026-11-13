@@ -13,7 +13,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 from typing import Literal
 
-from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
@@ -30,7 +30,9 @@ Kind = Literal['sales', 'purchases', 'labor', 'inventory']
 header = APIKeyHeader(name='X-API-Key', auto_error=False)
 
 
-def authenticate(key: str | None = Depends(header)):
+def authenticate(request: Request, key: str | None = Depends(header)):
+    if request.url.path == '/health':
+        return
     expected = os.getenv('SIDEWORK_API_KEY')
     if expected and (not key or not hmac.compare_digest(key, expected)):
         raise HTTPException(401, 'A valid X-API-Key header is required.')

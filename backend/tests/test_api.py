@@ -85,6 +85,7 @@ def test_headers_size_and_auth(client, monkeypatch):
     assert upload(client, 'sales', b'x' * 2_000_001).status_code == 413
     monkeypatch.setenv('SIDEWORK_API_KEY', 'test-secret')
     assert client.get('/api/records').status_code == 401
+    assert client.get('/health').status_code == 200
     assert client.get('/health', headers={'X-API-Key': 'test-secret'}).status_code == 200
 
 def test_latest_inventory_snapshot_and_aggregation(client):
