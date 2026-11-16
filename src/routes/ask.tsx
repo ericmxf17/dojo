@@ -4,9 +4,8 @@ import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ErrorState, PageHeader } from "@/components/sidework/states";
+import { ErrorState } from "@/components/sidework/states";
 import { useSideWork } from "@/lib/sidework/context";
-import { formatDate } from "@/lib/sidework/format";
 import type { AskResponse } from "@/lib/sidework/types";
 
 export const Route = createFileRoute("/ask")({
@@ -54,10 +53,6 @@ function AskPanel() {
   };
   return (
     <div className="max-w-3xl">
-      <PageHeader title="Ask Side Work">
-        This early version answers a few specific questions about your imported records for{" "}
-        {formatDate(date)}. It looks up records; it doesn’t guess, forecast, or give advice.
-      </PageHeader>
       <form
         className="flex gap-2"
         onSubmit={(e) => {

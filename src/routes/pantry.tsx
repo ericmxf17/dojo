@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState, ErrorState, LoadingBlock, PageHeader } from "@/components/sidework/states";
+import { EmptyState, ErrorState, LoadingBlock } from "@/components/sidework/states";
 import { useInventory, useSideWork } from "@/lib/sidework/context";
 import { formatDate } from "@/lib/sidework/format";
 import type { InventoryItem, InventoryStatus } from "@/lib/sidework/types";
@@ -66,10 +66,6 @@ function Pantry() {
 
   return (
     <div>
-      <PageHeader title="Digital Pantry">
-        What your most recent inventory snapshot recorded. This isn’t live stock tracking — sales
-        and purchases don’t change these quantities.
-      </PageHeader>
       {q.isLoading && <LoadingBlock />}
       {q.error && <ErrorState error={q.error} onRetry={() => q.refetch()} />}
       {q.data && !q.data.as_of && (

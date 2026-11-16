@@ -4,7 +4,7 @@ import { Plus, FileText, Download, Upload, Archive, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useWorkspace, useWorkspaceQuery } from "./workspace-hooks";
-import { PageHeader, ErrorState, LoadingBlock, EmptyState } from "./states";
+import { ErrorState, LoadingBlock, EmptyState } from "./states";
 import type { CabinetDocument, DocumentInput, Version } from "@/lib/sidework/workspace-types";
 import { downloadFile } from "@/lib/sidework/workspace-api";
 import { formatDate } from "@/lib/sidework/format";
@@ -74,8 +74,7 @@ export function Documents() {
     ) ?? [];
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <PageHeader title="A home for your paperwork." />
+      <div className="mb-6 flex justify-end">
         <Button
           onClick={() => {
             setForm(empty);

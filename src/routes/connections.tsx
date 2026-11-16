@@ -34,15 +34,17 @@ function Connections() {
   };
   return (
     <div>
-      <h1 className="mb-8 text-4xl font-medium">Your restaurant tools.</h1>
       {PROVIDERS.map((p) => (
-        <div key={p.id} className="flex items-center justify-between gap-6 border-b border-border py-6">
+        <div
+          key={p.id}
+          className="flex items-center justify-between gap-6 border-b border-border py-6"
+        >
           <Link to="/providers/$provider" params={{ provider: p.id }} className="min-w-0 flex-1">
-          <div>
-            <h2 className="text-xl font-medium">{p.name}</h2>
-            <p className="mt-2 text-muted-foreground">{p.description}</p>
-            <p className="mt-3 max-w-xl text-sm text-muted-foreground">{setup[p.id]}</p>
-          </div>
+            <div>
+              <h2 className="text-xl font-medium">{p.name}</h2>
+              <p className="mt-2 text-muted-foreground">{p.description}</p>
+              <p className="mt-3 max-w-xl text-sm text-muted-foreground">{setup[p.id]}</p>
+            </div>
           </Link>
           <div className="shrink-0 text-right">
             {["toast", "7shifts", "marketman"].includes(p.id) ? (
@@ -56,7 +58,10 @@ function Connections() {
                     const response = await workspace.testProvider(p.id);
                     setResult((old) => ({ ...old, [p.id]: response.note }));
                   } catch (error) {
-                    setResult((old) => ({ ...old, [p.id]: error instanceof Error ? error.message : "Connection failed." }));
+                    setResult((old) => ({
+                      ...old,
+                      [p.id]: error instanceof Error ? error.message : "Connection failed.",
+                    }));
                   } finally {
                     setTesting(null);
                   }
@@ -65,10 +70,16 @@ function Connections() {
                 {testing === p.id ? "Testing…" : "Test connection"}
               </button>
             ) : (
-              <span className="text-sm text-muted-foreground">{p.id === "resy" ? "Approval required" : "Setup →"}</span>
+              <span className="text-sm text-muted-foreground">
+                {p.id === "resy" ? "Approval required" : "Setup →"}
+              </span>
             )}
-            {result[p.id] && <p className="mt-2 max-w-xs text-xs text-muted-foreground">{result[p.id]}</p>}
-            {mode !== "live" && ["toast", "7shifts", "marketman"].includes(p.id) && <p className="mt-2 text-xs text-muted-foreground">Live mode required</p>}
+            {result[p.id] && (
+              <p className="mt-2 max-w-xs text-xs text-muted-foreground">{result[p.id]}</p>
+            )}
+            {mode !== "live" && ["toast", "7shifts", "marketman"].includes(p.id) && (
+              <p className="mt-2 text-xs text-muted-foreground">Live mode required</p>
+            )}
           </div>
         </div>
       ))}

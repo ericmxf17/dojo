@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useWorkspace, useWorkspaceQuery } from "./workspace-hooks";
-import { ErrorState, LoadingBlock, EmptyState, PageHeader } from "./states";
+import { ErrorState, LoadingBlock, EmptyState } from "./states";
 import { dates, transitions } from "@/lib/sidework/workspace-api";
 import type {
   EventInput,
@@ -134,8 +134,7 @@ export function Calendar() {
   ];
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <PageHeader title="Stay ahead of the week." />
+      <div className="mb-6 flex justify-end">
         <Button
           onClick={() => {
             if (tab === "calendar") {

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState, ErrorState, LoadingBlock, PageHeader } from "@/components/sidework/states";
+import { EmptyState, ErrorState, LoadingBlock } from "@/components/sidework/states";
 import { fieldLabel, formatField } from "@/components/sidework/RecordFields";
 import { useImports, useSideWork, useTemplates } from "@/lib/sidework/context";
 import { MAX_FILE_BYTES, templateCsv } from "@/lib/sidework/csv";
@@ -105,10 +105,6 @@ function ImportForm() {
 
   return (
     <div>
-      <PageHeader title="Import records">
-        Upload a CSV, review exactly what Side Work read, then confirm. Nothing is saved until you
-        press “Confirm import.”
-      </PageHeader>
       {mode === "sample" && (
         <p className="mb-6 rounded-md border border-warning/40 bg-warning-surface px-3 py-2 text-sm text-warning">
           Sample data mode: imports are kept in this browser only and are not sent to a server.

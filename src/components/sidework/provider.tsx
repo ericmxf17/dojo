@@ -35,24 +35,14 @@ export function Provider({ provider }: { provider: string }) {
   if (!p) return <EmptyState title="Unknown provider workspace" />;
   return (
     <div>
-      <p className="mb-3 text-sm text-primary">PROVIDER WORKSPACE</p>
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-5xl font-medium">{p.name}</h1>
-          <p className="mt-4 text-lg text-muted-foreground">{p.description}</p>
-        </div>
-        <div className="flex items-center gap-2 pt-3 text-sm text-muted-foreground">
+      <div className="mb-6 flex justify-end">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Circle className="size-3" />
           NOT CONNECTED
         </div>
       </div>
-      <div className="mb-8 border-y border-border py-6">
-        <h2 className="text-xl font-medium">
-          {provider === "resy"
-            ? "Connection setup information"
-            : "Mapped records, clearly attributed."}
-        </h2>
-        <p className="mt-3 max-w-3xl text-base leading-relaxed text-muted-foreground">
+      <div className="mb-8 border-y border-border py-4">
+        <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
           {provider === "resy"
             ? "Resy is a setup-only workspace. No reservation data, reservation endpoint, OAuth or sync is available in the existing backend. No guest data has been fetched."
             : "These are owner-uploaded CSV records, not data fetched from the vendor API. Native exports must first be mapped to Side Work’s exact templates. No OAuth or live sync is configured."}

@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { EmptyState, ErrorState, LoadingBlock, PageHeader } from "@/components/sidework/states";
+import { EmptyState, ErrorState, LoadingBlock } from "@/components/sidework/states";
 import { fieldLabel, formatField } from "@/components/sidework/RecordFields";
 import { useRecords, useSideWork } from "@/lib/sidework/context";
 import { formatDate } from "@/lib/sidework/format";
@@ -52,9 +52,6 @@ function Records() {
 
   return (
     <div>
-      <PageHeader title="Records">
-        The imported records Side Work is using. Open any row to see where it came from.
-      </PageHeader>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs
           value={kind}

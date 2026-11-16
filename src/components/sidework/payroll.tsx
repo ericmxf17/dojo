@@ -7,7 +7,7 @@ import { formatCents, formatDate } from "@/lib/sidework/format";
 import { downloadFile } from "@/lib/sidework/workspace-api";
 import type { Adjustment, PayrollReport } from "@/lib/sidework/workspace-types";
 import { useWorkspace, useWorkspaceQuery } from "./workspace-hooks";
-import { PageHeader, ErrorState, LoadingBlock, EmptyState } from "./states";
+import { ErrorState, LoadingBlock, EmptyState } from "./states";
 export function Payroll() {
   const { workspace, keyBase, openSources } = useWorkspace();
   const qc = useQueryClient();
@@ -49,11 +49,6 @@ export function Payroll() {
   }, 0);
   return (
     <div>
-      <PageHeader title="Payroll, brought together." />
-      <p className="-mt-4 mb-7 text-muted-foreground">
-        Review imported hours and owner-entered adjustments. Save one consolidated preparation
-        draft.
-      </p>
       <div className="mb-7 flex flex-wrap items-end gap-4">
         <label className="field">
           Start date
