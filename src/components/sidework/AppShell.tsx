@@ -8,10 +8,9 @@ import {
   Upload,
   Warehouse,
   Database,
-  MessageSquare,
+  Plug,
   Menu,
   Settings2,
-  ChevronDown,
   ArrowUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,24 +21,24 @@ import { PROVIDERS } from "@/lib/sidework/workspace-types";
 import { HomeLogo } from "./brand";
 import { useFeatures, type FeatureId } from "@/lib/sidework/features";
 import { SourcesDrawer } from "./SourcesDrawer";
-const operations = [
-  { to: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
+const navigation = [
+  { to: "/dashboard", label: "Home", Icon: LayoutDashboard, feature: null },
   { to: "/payroll", label: "Payroll", Icon: Wallet },
-  { to: "/documents", label: "Legal Documents", Icon: Files },
-  { to: "/calendar", label: "Calendar & Orders", Icon: CalendarDays },
-] as const;
-const data = [
+  { to: "/documents", label: "Documents", Icon: Files },
+  { to: "/calendar", label: "Calendar", Icon: CalendarDays },
   { to: "/imports", label: "Imports", Icon: Upload },
-  { to: "/pantry", label: "Digital Pantry", Icon: Warehouse },
+  { to: "/pantry", label: "Pantry", Icon: Warehouse },
   { to: "/records", label: "Records", Icon: Database },
-  { to: "/ask", label: "Ask Side Work", Icon: MessageSquare },
+  { to: "/connections", label: "Connections", Icon: Plug, feature: "tools" },
 ] as const;
 export function AppShell({ children }: { children: ReactNode }) {
   const { date, setDate, mode, setMode, baseUrl, setBaseUrl } = useSideWork();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const health = useHealth();
   const { has } = useFeatures();
-  const show = (to: string) => to === "/dashboard" || has(to.slice(1) as FeatureId);
+  const show = (item: (typeof navigation)[number]) =>
+    item.to === "/dashboard" ||
+    has((("feature" in item && item.feature) || item.to.slice(1)) as FeatureId);
   const [menu, setMenu] = useState(false);
   const [settings, setSettings] = useState(false);
   const [url, setUrl] = useState(baseUrl);
@@ -54,53 +53,25 @@ export function AppShell({ children }: { children: ReactNode }) {
           {mode === "sample" ? "Synthetic sample restaurant" : "Connected workspace"}
         </p>
       </div>
-      <nav className="mt-5 flex-1 overflow-y-auto" aria-label="Owner navigation">
-        {[
-          { items: operations, label: "OPERATIONS" },
-          { items: data, label: "DATA" },
-        ].map(({ items, label }, i) => (
-          <div key={String(label)}>
-            {i === 1 && has("tools") && (
-              <div className="mb-6">
-                <p className="mb-2 px-3 text-xs font-medium text-muted-foreground">TOOLS</p>
-                {PROVIDERS.map((p) => (
-                  <Link
-                    key={p.id}
-                    to="/providers/$provider"
-                    params={{ provider: p.id }}
-                    onClick={() => setMenu(false)}
-                    className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${path === "/providers/" + p.id ? "bg-secondary font-medium text-primary" : "text-muted-foreground hover:bg-muted"}`}
-                  >
-                    <span className="flex size-5 items-center justify-center text-sm font-semibold">
-                      {p.name.slice(0, 1)}
-                    </span>
-                    {p.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-            <p className="mb-2 px-3 text-xs font-medium text-muted-foreground">{String(label)}</p>
-            <div className="mb-6">
-              {items
-                .filter((n) => show(n.to))
-                .map((n) => (
-                  <Link
-                    key={n.to}
-                    to={n.to}
-                    onClick={() => setMenu(false)}
-                    className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${path === n.to ? "bg-primary font-medium text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-                  >
-                    <n.Icon className="size-[18px]" />
-                    {n.label}
-                  </Link>
-                ))}
-            </div>
-          </div>
+      <nav
+        className="mt-5 flex flex-1 flex-col gap-1 overflow-y-auto"
+        aria-label="Owner navigation"
+      >
+        {navigation.filter(show).map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            onClick={() => setMenu(false)}
+            className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${path === item.to ? "bg-primary font-medium text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+          >
+            <item.Icon className="size-[18px]" />
+            {item.label}
+          </Link>
         ))}
       </nav>
       <Button asChild variant="ghost" className="justify-start text-muted-foreground">
         <Link to="/setup" onClick={() => setMenu(false)}>
-          <Settings2 /> Customize dashboard
+          <Settings2 /> Workspace setup
         </Link>
       </Button>
       <Button
@@ -128,7 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     </div>
   );
   const title =
-    [...operations, ...data].find((n) => n.to === path)?.label ??
+    navigation.find((n) => n.to === path)?.label ??
     PROVIDERS.find((p) => path.endsWith("/" + p.id))?.name ??
     "Workspace";
   return (
@@ -154,9 +125,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Menu />
             </Button>
-            <span className="text-sm text-muted-foreground">
-              Workspace <span className="mx-2">/</span>
-              <span className="font-medium text-foreground">{title}</span>
+            <span className="text-sm font-medium text-foreground">
+              {path === "/dashboard" ? "Juniper Kitchen" : title}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -180,11 +150,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
           </div>
         </header>
-        <div className="border-b border-border bg-secondary/50 px-5 py-2.5 text-sm text-muted-foreground md:px-9">
-          {mode === "sample"
-            ? "Sample data · Synthetic records and changes are stored in this browser only."
-            : "Connected API · Records are read from your configured backend. No sample fallback."}
-        </div>
         <main className="mx-auto max-w-[1450px] px-5 py-8 md:px-9 md:py-10">{children}</main>
       </div>
       <SourcesDrawer />

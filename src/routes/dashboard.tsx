@@ -6,12 +6,13 @@ export const Route = createFileRoute("/dashboard")({
       { title: "Dashboard — sidework" },
       {
         name: "description",
-        content: "Sales, employee hours, estimated base wages and restaurant deadlines.",
+        content:
+          "Ask Sidework about restaurant operations and receive source-backed visual answers.",
       },
       { property: "og:title", content: "Dashboard — sidework" },
       {
         property: "og:description",
-        content: "Sales, employee hours, estimated base wages and restaurant deadlines.",
+        content: "A simpler, conversational view of restaurant operations.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
